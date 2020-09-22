@@ -1,7 +1,7 @@
 import unittest
 #from skinConditionDetect.preprocess import image_process
 #from preprocess import image_process
-from skinConditionDetect import image_process
+import skinConditionDetect 
 import torch
 from PIL import Image
 import requests
@@ -28,32 +28,32 @@ class test_image_process(unittest.TestCase):
         pass
 
     def test_expand_square(self):
-        self.assertEqual(image_process((400,600)).expand(self.image1).size, (400,400))
-        self.assertEqual(image_process((600,600)).expand(self.image1).size, (600,600))
-        self.assertEqual(image_process((600,400)).expand(self.image1).size, (400,400))
+        self.assertEqual(skinConditionDetect.image_process((400,600)).expand(self.image1).size, (400,400))
+        self.assertEqual(skinConditionDetect.image_process((600,600)).expand(self.image1).size, (600,600))
+        self.assertEqual(skinConditionDetect.image_process((600,400)).expand(self.image1).size, (400,400))
 
     def test_expand_tall_rectangle(self):
-        self.assertEqual(image_process((300,700)).expand(self.image2).height, 300)
-        self.assertEqual(image_process((700,700)).expand(self.image2).height, 700)
-        self.assertEqual(image_process((700,300)).expand(self.image2).width, 300)
+        self.assertEqual(skinConditionDetect.image_process((300,700)).expand(self.image2).height, 300)
+        self.assertEqual(skinConditionDetect.image_process((700,700)).expand(self.image2).height, 700)
+        self.assertEqual(skinConditionDetect.image_process((700,300)).expand(self.image2).width, 300)
 
     def test_expand_long_rectangle(self):
-        self.assertEqual(image_process((300,700)).expand(self.image2).height, 300)
-        self.assertEqual(image_process((700,700)).expand(self.image1).width, 700)
-        self.assertEqual(image_process((700,300)).expand(self.image1).width, 300)
+        self.assertEqual(skinConditionDetect.image_process((300,700)).expand(self.image2).height, 300)
+        self.assertEqual(skinConditionDetect.image_process((700,700)).expand(self.image1).width, 700)
+        self.assertEqual(skinConditionDetect.image_process((700,300)).expand(self.image1).width, 300)
 
     def test_uniform_size_long_rectangle(self):
-        self.assertEqual(image_process((400,700)).uniform_size(self.tensor1).size(), torch.Size([3, 400, 700]))
-        self.assertEqual(image_process((500,600)).uniform_size(self.tensor1).size(), torch.Size([3, 500, 600]))
+        self.assertEqual(skinConditionDetect.image_process((400,700)).uniform_size(self.tensor1).size(), torch.Size([3, 400, 700]))
+        self.assertEqual(skinConditionDetect.image_process((500,600)).uniform_size(self.tensor1).size(), torch.Size([3, 500, 600]))
 
 
     def test_uniform_size_square(self):
-        self.assertEqual(image_process((400,500)).uniform_size(self.tensor2).size(), torch.Size([3, 400, 500]))
-        self.assertEqual(image_process((500,400)).uniform_size(self.tensor2).size(), torch.Size([3, 500, 400]))
+        self.assertEqual(skinConditionDetect.image_process((400,500)).uniform_size(self.tensor2).size(), torch.Size([3, 400, 500]))
+        self.assertEqual(skinConditionDetect.image_process((500,400)).uniform_size(self.tensor2).size(), torch.Size([3, 500, 400]))
 
     def test_uniform_size_short_rectangle(self):
-        self.assertEqual(image_process((700,400)).uniform_size(self.tensor3).size(), torch.Size([3, 700, 400]))
-        self.assertEqual(image_process((600,500)).uniform_size(self.tensor3).size(), torch.Size([3, 600, 500]))
+        self.assertEqual(skinConditionDetect.image_process((700,400)).uniform_size(self.tensor3).size(), torch.Size([3, 700, 400]))
+        self.assertEqual(skinConditionDetect.image_process((600,500)).uniform_size(self.tensor3).size(), torch.Size([3, 600, 500]))
         print("DONE PREPROCESS TEST")
 
 
