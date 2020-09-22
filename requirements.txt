@@ -1,0 +1,10 @@
+# Add libraries that must be installed
+
+torch
+pillow
+numpy
+pandas
+matplotlib
+scikit-image
+torchvision
+requests
