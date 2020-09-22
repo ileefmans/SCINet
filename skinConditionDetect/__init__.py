@@ -1,1 +1,1 @@
-from .skinConditionDetect import *
+from .preprocess import *
