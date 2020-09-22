@@ -4,9 +4,15 @@ python: "3.6"
 cache: pip
 install: 
   - pip install -r requirements.txt
+  - pip install pytest-cov
+  - pip install coveralls
+  - python setup.py install
 script:
-  - python setup.py install 
-  - python tests/test_preprocess.py
+  - coverage run -m pytest 
+  - coverage report -m
+
+after_success:
+  -coveralls
 
 notifications:
   email:
