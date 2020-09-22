@@ -1,7 +1,7 @@
 import unittest
 #from preprocess.preprocess import Image_Process
 #from preprocess import Image_Process
-import preprocess 
+import skinConditionDetect 
 import torch
 from PIL import Image
 import requests
