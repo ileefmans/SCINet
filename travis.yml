@@ -1,0 +1,14 @@
+language: python
+
+python: "3.6"
+cache: pip
+install: "pip install -r requirements.txt"
+script: 
+  - python test_preprocess.py
+
+notifications:
+  email:
+    recipients:
+      iel230@nyu.edu
+    on_success: never
+    on_failure: always
