@@ -12,11 +12,11 @@ class MVP(nn.Module):
 	def __init__(self):
 		super(MVP, self).__init__()
 
-		self.model = fasterrcnn_resnet50_fpn(pretrained=True, progress=True, num_classes=7)
+		self.model = fasterrcnn_resnet50_fpn(pretrained=False, progress=True, num_classes=7)
 
 
-	def forward(self, x):
-		x = self.model(x)
+	def forward(self, image, annotations):
+		output = self.model(image, annotations)
 
 
-		return(x)
+		return output
