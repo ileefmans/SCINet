@@ -9,13 +9,16 @@ import numpy as np
 from preprocess import Image_Process
 
 
-#def get_direclists():
-    #client = storage.Client.from_service_account_json('ian-access-key.json')
-    #image_list = list(client.list_blobs('followup_annotated_data', prefix='images'))
-    #annotation_list = list(client.list_blobs('followup_annotated_data', prefix='followup_data'))
 
-    #return image_list, annotation_list
+# Define collate function for dataloader
+def my_collate(batch):
+    data = [item[0] for item in batch]
+    target = [item[1] for item in batch]
+    #target = torch.LongTensor(target)
+    return data, target
 
+
+# Define class for creating and uploaded pickled annotation dictionary
 class Annotation_Dict:
     """
         Class for creating and importing pickled dictionary with 
@@ -67,6 +70,10 @@ class CreateDataset(torch.utils.data.Dataset):
             pickle_path (string): Path to pickle file containing annotation dictionary
 
             data_directory (string): Directory where data is kept
+
+            img_size (tuple): Size to convert all images to (height, width)
+
+            local (boolean): True if running on local machine, False if running on AWS
             
             transform (callable, optional): Optional transform to be applied on a sample
         """
@@ -76,11 +83,17 @@ class CreateDataset(torch.utils.data.Dataset):
         self.img_size = img_size
         self.local = local
         self.transform = transform
+
+        # get pickled dictionary for annotation paths
         self.annotation_source = Annotation_Dict(self.pickle_path)
         self.annotation_dict = self.annotation_source.get_pickle()
+
+        # crate dictionary for labelings of bounding boxes
         self.label_dict = {"pimple-region":1, "come-region":2, 
                            "darkspot-region":3, "ascar-region":4, "oscar-region":5, 
                            "darkcircle":6}
+
+        # instantiate custom preprocessing class
         self.Image_Process = Image_Process(self.img_size)
 
 
@@ -145,12 +158,14 @@ class CreateDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         
+        # open annotated json as dataframe and get corresponding image path
         annotation_df = pd.read_json(os.path.join(self.data_dir, 'followup_data/', self.annotation_dict[index][0]))
         image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
+        # extract bounding boxes and labels corresponding to image
         total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
         annotation = self.annotation_conversion(total_annotation)
 
-
+        # import image, convert to RBG, conver to tensor and make uniform size
         if self.local == False:
             image = Image.open(image_path)
         else:
@@ -163,8 +178,8 @@ class CreateDataset(torch.utils.data.Dataset):
         if self.transform:
             image = self.transform(image)
         image = self.Image_Process.uniform_size(image)
-        
-        #instance = {'image': image, 'annotation': annotation}
+
+
 
         return image, annotation
 
