@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim 
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
 class MVP(nn.Module):
