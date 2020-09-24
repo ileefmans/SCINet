@@ -32,14 +32,16 @@ class Annotation_Dict:
 
         """
         self.pickle_file_name = pickle_file_name
+        #self.filepath = filepath
         
 
 
     def set_pickle(self):
         annotation_dict = {}
         count = 0 
-        for filename in tqdm(os.listdir("followup_data")):
-            df = pd.read_json("followup_data"+filename)
+        for filename in tqdm(os.listdir(self.filepath)):
+            df = pd.read_json(self.filepath+filename)
+            df = df.loc[(df.image_details.notnull()) or (df.image_path.notnull()),:].reset_index()
             for i in range(len(df)):
                 annotation_dict[count] = (filename, i)
                 count+=1
@@ -130,8 +132,12 @@ class CreateDataset(torch.utils.data.Dataset):
         count = 0
         for i in total_annotation['annotation']:
             try:
-                if i['condition']=='Detected':
+                #print("ENTERING TRY")
+                if (i['condition']=='Detected') and ('bounding_boxes' in i.keys()):
+                    #print("ABOUT TO DESTRING")
                     box = self.destring(i['bounding_boxes'])
+                    #print("DESTRING DONE!!!")
+                    #print(box)
                     label = torch.ones([box.size(0)], dtype=torch.int64)*self.label_dict[i['label']]
                     if count == 0:
                         boxes = box
@@ -146,7 +152,7 @@ class CreateDataset(torch.utils.data.Dataset):
                 pass
  
         annotation['boxes'] = boxes
-        annotation['labels'] =  labels
+        annotation['labels'] = labels
 
         return annotation
 
@@ -163,8 +169,16 @@ class CreateDataset(torch.utils.data.Dataset):
         image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
         # extract bounding boxes and labels corresponding to image
         total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
-        annotation = self.annotation_conversion(total_annotation)
 
+        #-------------------------------------------------------------------------------------------------------
+        #try:
+        annotation = self.annotation_conversion(total_annotation)
+            #print("PASSED", self.annotation_dict[index], index)
+        #except:
+            #print("FAILED", self.annotation_dict[index], index)
+        #finally:
+            #pass
+        #-------------------------------------------------------------------------------------------------------
         # import image, convert to RBG, conver to tensor and make uniform size
         if self.local == False:
             image = Image.open(image_path)

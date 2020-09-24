@@ -5,11 +5,16 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 import torchvision
+from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import argparse
 from tqdm import tqdm
 
+
+
+
 from datahelper import CreateDataset, my_collate
-from model import MVP
+#from model import MVP
 
 
 
@@ -41,59 +46,152 @@ def get_args():
 
 
 class Trainer:
-	"""
-		Class for training project models
-	"""
+    """
+        Class for training project models
+    """
 
-	def __init__(self):
+    def __init__(self):
 
-		self.ops = get_args()
-		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-		self.model_version = self.ops.model_version
-		
-		# Import model
-		if self.model_version==1:
-			self.model = MVP().to(self.device) 
-		else:
-			# ENTER OTHER MODEL INITIALIZATIONS HERE
-			pass
+        self.ops = get_args()
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.model_version = self.ops.model_version
+        
+        # Import model
+        if self.model_version==1:
+            self.model = fasterrcnn_resnet50_fpn(pretrained=True).to(self.device) 
+            self.num_classes = 7
+            self.in_features = self.model.roi_heads.box_predictor.cls_score.in_features
+            self.model.roi_heads.box_predictor = FastRCNNPredictor(self.in_features, self.num_classes)
+        else:
+            # ENTER OTHER MODEL INITIALIZATIONS HERE
+            pass
 
-		# Set local or remote paths
-		self.local = self.ops.local
-		if self.local==True:
-			self.pickle_path = self.ops.local_pickle_path
-			self.data_directory = self.ops.local_data_directory
-		else:
-			# CREATE AWS PATHS HERE
-			pass
+        # Set local or remote paths
+        self.local = self.ops.local
+        if self.local==True:
+            self.pickle_path = self.ops.local_pickle_path
+            self.data_directory = self.ops.local_data_directory
+        else:
+            # CREATE AWS PATHS HERE
+            pass
 
-		self.img_size = self.ops.image_size
-		self.transform = torchvision.transforms.ToTensor()
-		self.batch_size = self.ops.batch_size
-		self.num_workers = self.ops.num_workers
-		self.shuffle = self.ops.shuffle
-		self.learning_rate = self.ops.learning_rate
-		self.epochs = self.ops.epochs
-
-
-
-		# Instantiate Dataloaders
-
-		self.dataset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, transform=self.transform)
-		self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
-
-
-		self.optimizer = torch.optim.Adam(self.model.parameters(), lr = self.learning_rate)
-
-
-		# TRAINING
-
-		def train(self):
-
-			for epoch in range(start_epoch, self.epochs+1):
+        self.img_size = self.ops.image_size
+        self.transform = torchvision.transforms.ToTensor()
+        self.batch_size = self.ops.batch_size
+        self.num_workers = self.ops.num_workers
+        self.shuffle = self.ops.shuffle
+        self.learning_rate = self.ops.learning_rate
+        self.epochs = self.ops.epochs
 
 
 
+        # Instantiate Dataloaders
+
+        self.dataset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, transform=self.transform)
+        self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
+
+        # Instatntiate Optimizer
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr = self.learning_rate)
+
+
+        # TRAINING
+
+    def train(self):
+        # Load weights if applicable
+        # if self.load_weights == True:
+  #         start_epoch, loss = self.load_model(self.model, self.optimizer, "VAE")
+  #           start_epoch+=1
+  #           print("\n \n [WEIGHTS LOADED]")
+  #       else:
+  #         start_epoch = 0
+
+        start_epoch = 0
+
+            # Start Training loop
+        for epoch in range(start_epoch, self.epochs+1):
+
+            # TRAIN
+            if epoch>0:
+                self.model.train()
+                train_loss = 0
+                for image, annotation in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
+
+                    # image tensors and bounding box and label tensors to device
+                    image = [im.to(self.device) for im in image]
+                    annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
+
+                    loss_dict = self.model(image, annotation)
+                    loss = sum(loss for loss in loss_dict.values())
+                    train_loss+=loss
+
+                    # Clear optimizer gradient
+                    self.optimizer.zero_grad()
+                    # Backprop
+                    loss.backward()
+                    # Take a step 
+                    self.optimizer.step()
+
+                print(f'====> Epoch: {epoch} Average loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
+
+            # with torch.no_grad():
+            #     self.model.eval()
+            #     for image, annotation in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
+            #         test_loss = 0
+
+            #         image = [im.to(self.device) for im in image]
+            #         annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
+
+            #         output = self.model(image)
+            print("[DONE EPOCH{}".format(epoch))
+
+        print("[DONE]")
+
+
+
+                
+
+                
+            
+
+
+
+
+
+
+    #SAVE MODEL PARAMETERS
+    def save_model(self, model, optimizer, model_name, epoch, loss):
+        """
+        Function for saving model parameters
+        """
+        save_path = os.path.join(self.save_path, model_name)
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path+"/params.tar")
+
+
+    #LOAD MODEL PARAMETERS
+    def load_model(self, model, optimizer, model_name):
+        """
+        Function for loading model parameters 
+        """
+        load_path = os.path.join(self.save_path, model_name, "params.tar")
+        checkpoint = torch.load(load_path)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        epoch = checkpoint["epoch"]
+        loss = checkpoint["loss"]
+
+        return epoch, loss
+
+
+
+
+if __name__=="__main__":
+    trainer = Trainer()
+    trainer.train()
 
 
 
@@ -101,8 +199,4 @@ class Trainer:
 
 
 
-
-
-
-
-		
+        
