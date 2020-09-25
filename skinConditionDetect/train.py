@@ -22,9 +22,11 @@ from datahelper import CreateDataset, my_collate
 def get_args():
     parser = argparse.ArgumentParser(description = "Model Options")
     parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
-    parser.add_argument("--local", type=bool, default=True, help="True if running on local machine, False if running on AWS")
+    parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
     parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/annotation_dict.pkl", help="path to local pickled annotation path dictionary")
+    parser.add_argument("--remote_pickle_path", type=str, default="annotation_dict.pkl")
     parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
+    parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
     parser.add_argument("--image_size", type=tuple, default=(1000,1000), help="Size all images will be transformed to (height,width)")
     parser.add_argument("--batch_size", type=int, default=30, help="Minibatch size")
     parser.add_argument("--num_workers", type=int, default=5, help="Number of workers for dataloader")
@@ -68,20 +70,29 @@ class Trainer:
 
         # Set local or remote paths
         self.local = self.ops.local
-        if self.local==True:
+        print("LOCAL: ", self.local)
+        if self.local ==1:
+            self.local=True
+            print("TRUE")
             self.pickle_path = self.ops.local_pickle_path
             self.data_directory = self.ops.local_data_directory
+            self.save_path = self.ops.local_save_path
         else:
-            # CREATE AWS PATHS HERE
-            pass
+            self.local=False
+            print("False")
+            self.pickle_path = self.ops.remote_pickle_path
+            self.data_directory = self.ops.remote_data_directory
+            
 
         self.img_size = self.ops.image_size
         self.transform = torchvision.transforms.ToTensor()
         self.batch_size = self.ops.batch_size
         self.num_workers = self.ops.num_workers
+        print("NUM WORKERS: ", self.num_workers)
         self.shuffle = self.ops.shuffle
         self.learning_rate = self.ops.learning_rate
         self.epochs = self.ops.epochs
+        self.load_weights=self.ops.load_weights
 
 
 
@@ -98,14 +109,14 @@ class Trainer:
 
     def train(self):
         # Load weights if applicable
-        # if self.load_weights == True:
-  #         start_epoch, loss = self.load_model(self.model, self.optimizer, "VAE")
-  #           start_epoch+=1
-  #           print("\n \n [WEIGHTS LOADED]")
-  #       else:
-  #         start_epoch = 0
+        if self.load_weights == True:
+            start_epoch, loss = self.load_model(self.model, self.optimizer, "FASTERRCNN")
+            start_epoch+=1
+            print("\n \n [WEIGHTS LOADED]")
+        else:
+            start_epoch = 0
 
-        start_epoch = 0
+        #start_epoch = 0
 
             # Start Training loop
         for epoch in range(start_epoch, self.epochs+1):
@@ -131,17 +142,19 @@ class Trainer:
                     # Take a step 
                     self.optimizer.step()
 
+                self.save_model(self.model, self.optimizer, "FASTERRCNN", epoch, train_loss)
+
                 print(f'====> Epoch: {epoch} Average loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
 
-            # with torch.no_grad():
-            #     self.model.eval()
-            #     for image, annotation in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
-            #         test_loss = 0
+            with torch.no_grad():
+                self.model.eval()
+                for image, annotation in tqdm(self.train_loader, desc= "Test Epoch "+str(epoch)):
+                    test_loss = 0
 
-            #         image = [im.to(self.device) for im in image]
-            #         annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
+                    image = [im.to(self.device) for im in image]
+                    annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
 
-            #         output = self.model(image)
+                    output = self.model(image)
             print("[DONE EPOCH{}".format(epoch))
 
         print("[DONE]")
