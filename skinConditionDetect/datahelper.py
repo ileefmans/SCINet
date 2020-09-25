@@ -7,6 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from preprocess import Image_Process
+import boto3
 
 
 
@@ -85,6 +86,7 @@ class CreateDataset(torch.utils.data.Dataset):
         self.img_size = img_size
         self.local = local
         self.transform = transform
+        self.s3 = boto3.client('s3')
 
         # get pickled dictionary for annotation paths
         self.annotation_source = Annotation_Dict(self.pickle_path)
@@ -160,12 +162,18 @@ class CreateDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         #return len(self.annotation_dict)
-        return 10000
+        return 10
 
     def __getitem__(self, index):
-        
+
         # open annotated json as dataframe and get corresponding image path
-        annotation_df = pd.read_json(os.path.join(self.data_dir, 'followup_data/', self.annotation_dict[index][0]))
+        if self.local==False:
+            obj1 = self.s3.get_object(Bucket="followup-annotated-data", Key=os.path.join('followup_data/', self.annotation_dict[index][0]))
+            annotation_df = pd.read_json(obj1['Body'])
+        else:
+            annotation_df = pd.read_json(os.path.join(self.data_dir, 'followup_data/', self.annotation_dict[index][0]))
+
+        
         image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
         # extract bounding boxes and labels corresponding to image
         total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
@@ -181,7 +189,8 @@ class CreateDataset(torch.utils.data.Dataset):
         #-------------------------------------------------------------------------------------------------------
         # import image, convert to RBG, conver to tensor and make uniform size
         if self.local == False:
-            image = Image.open(image_path)
+            obj2 = self.s3.get_object(Bucket="followup-annotated-data", Key=image_path)
+            image = Image.open(obj2['Body'])
         else:
             image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
 
