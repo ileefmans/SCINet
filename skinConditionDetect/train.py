@@ -125,6 +125,7 @@ class Trainer:
             if epoch>0:
                 self.model.train()
                 train_loss = 0
+                counter=0
                 for image, annotation in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
                     # image tensors and bounding box and label tensors to device
@@ -141,8 +142,9 @@ class Trainer:
                     loss.backward()
                     # Take a step 
                     self.optimizer.step()
-
-                self.save_model(self.model, self.optimizer, "FASTERRCNN", epoch, train_loss)
+                    
+                    if counter%10==0:
+                        self.save_model(self.model, self.optimizer, "FASTERRCNN", epoch, train_loss)
 
                 print(f'====> Epoch: {epoch} Average loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
 
