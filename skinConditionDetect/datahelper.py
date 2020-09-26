@@ -161,8 +161,8 @@ class CreateDataset(torch.utils.data.Dataset):
     
 
     def __len__(self):
-        #return len(self.annotation_dict)
-        return 500
+        return len(self.annotation_dict)
+        #return 500
 
     def __getitem__(self, index):
 
