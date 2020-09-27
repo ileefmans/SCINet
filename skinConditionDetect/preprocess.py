@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from skimage import io, transform
+#from skimage import io, transform
 
 import torch
 from torch import nn
