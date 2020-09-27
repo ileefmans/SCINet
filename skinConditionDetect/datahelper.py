@@ -13,203 +13,203 @@ import boto3
 
 # Define collate function for dataloader
 def my_collate(batch):
-    data = [item[0] for item in batch]
-    target = [item[1] for item in batch]
-    #target = torch.LongTensor(target)
-    return data, target
+	data = [item[0] for item in batch]
+	target = [item[1] for item in batch]
+	#target = torch.LongTensor(target)
+	return data, target
 
 
 # Define class for creating and uploaded pickled annotation dictionary
 class Annotation_Dict:
-    """
-        Class for creating and importing pickled dictionary with 
-    """
-    def __init__(self, pickle_file_name):
-        """
-            Args:
+	"""
+		Class for creating and importing pickled dictionary with 
+	"""
+	def __init__(self, pickle_file_name):
+		"""
+			Args:
 
-            pickle_file_name (string): name of desired pickle file, format: '<name>.pkl"
-            annotation_directory (string): Directory where anotation json files are kept
+			pickle_file_name (string): name of desired pickle file, format: '<name>.pkl"
+			annotation_directory (string): Directory where anotation json files are kept
 
-        """
-        self.pickle_file_name = pickle_file_name
-        #self.filepath = filepath
-        
+		"""
+		self.pickle_file_name = pickle_file_name
+		#self.filepath = filepath
+		
 
 
-    def set_pickle(self):
-        annotation_dict = {}
-        count = 0 
-        for filename in tqdm(os.listdir(self.filepath)):
-            df = pd.read_json(self.filepath+filename)
-            df = df.loc[(df.image_details.notnull()) or (df.image_path.notnull()),:].reset_index()
-            for i in range(len(df)):
-                annotation_dict[count] = (filename, i)
-                count+=1
-        with open(self.pickle_file_name, 'wb') as handle:
-            pickle.dump(followup_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	def set_pickle(self):
+		annotation_dict = {}
+		count = 0 
+		for filename in tqdm(os.listdir(self.filepath)):
+			df = pd.read_json(self.filepath+filename)
+			df = df.loc[(df.image_details.notnull()) or (df.image_path.notnull()),:].reset_index()
+			for i in range(len(df)):
+				annotation_dict[count] = (filename, i)
+				count+=1
+		with open(self.pickle_file_name, 'wb') as handle:
+			pickle.dump(followup_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def get_pickle(self):
-        with open(self.pickle_file_name, 'rb') as handle:
-            dictionary = pickle.load(handle)
-            return dictionary
+	def get_pickle(self):
+		with open(self.pickle_file_name, 'rb') as handle:
+			dictionary = pickle.load(handle)
+			return dictionary
 
 
 
 
 
 class CreateDataset(torch.utils.data.Dataset):
-    
-    """
-        Creates iterable dataset as subclass of Pytorch Dataset
-    """
-    
-    
-    def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=True, transform=None):
-        
-        """
-            Args:
-            
-            pickle_path (string): Path to pickle file containing annotation dictionary
+	
+	"""
+		Creates iterable dataset as subclass of Pytorch Dataset
+	"""
+	
+	
+	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=True, transform=None):
+		
+		"""
+			Args:
+			
+			pickle_path (string): Path to pickle file containing annotation dictionary
 
-            data_directory (string): Directory where data is kept
+			data_directory (string): Directory where data is kept
 
-            img_size (tuple): Size to convert all images to (height, width)
+			img_size (tuple): Size to convert all images to (height, width)
 
-            local (boolean): True if running on local machine, False if running on AWS
-            
-            transform (callable, optional): Optional transform to be applied on a sample
-        """
+			local (boolean): True if running on local machine, False if running on AWS
+			
+			transform (callable, optional): Optional transform to be applied on a sample
+		"""
 
-        self.pickle_path = pickle_path
-        self.data_dir = data_directory
-        self.img_size = img_size
-        self.local = local
-        self.transform = transform
-        self.s3 = boto3.client('s3')
+		self.pickle_path = pickle_path
+		self.data_dir = data_directory
+		self.img_size = img_size
+		self.local = local
+		self.transform = transform
+		self.s3 = boto3.client('s3')
 
-        # get pickled dictionary for annotation paths
-        self.annotation_source = Annotation_Dict(self.pickle_path)
-        self.annotation_dict = self.annotation_source.get_pickle()
+		# get pickled dictionary for annotation paths
+		self.annotation_source = Annotation_Dict(self.pickle_path)
+		self.annotation_dict = self.annotation_source.get_pickle()
 
-        # crate dictionary for labelings of bounding boxes
-        self.label_dict = {"pimple-region":1, "come-region":2, 
-                           "darkspot-region":3, "ascar-region":4, "oscar-region":5, 
-                           "darkcircle":6}
+		# crate dictionary for labelings of bounding boxes
+		self.label_dict = {"pimple-region":1, "come-region":2, 
+						   "darkspot-region":3, "ascar-region":4, "oscar-region":5, 
+						   "darkcircle":6}
 
-        # instantiate custom preprocessing class
-        self.Image_Process = Image_Process(self.img_size)
-
-
-
-
-    def destring(self, list_string):
-        """
-            Function for converting a list of strings containing bounding box coordinates to tensors
-
-            Args:
-
-                list_string (list): List of strings to be converted
-        """
-        out = []
-        for i in list_string:
-            x = i.split(',')
-            x = [float(j) for j in x]
-            out.append(x)
-        out = torch.tensor(out) 
-        return out     
+		# instantiate custom preprocessing class
+		self.Image_Process = Image_Process(self.img_size)
 
 
 
-    def annotation_conversion(self, total_annotation):
-        """
-            Function to convert annotations into a form usable in a deep learning object detection model
 
-            Args:
+	def destring(self, list_string):
+		"""
+			Function for converting a list of strings containing bounding box coordinates to tensors
 
-                annotation (list): list of dictionaries containing all annotation infromation
-        """
-        annotation = {}
+			Args:
 
-        count = 0
-        for i in total_annotation['annotation']:
-            try:
-                #print("ENTERING TRY")
-                if (i['condition']=='Detected') and ('bounding_boxes' in i.keys()):
-                    #print("ABOUT TO DESTRING")
-                    box = self.destring(i['bounding_boxes'])
-                    #print("DESTRING DONE!!!")
-                    #print(box)
-                    label = torch.ones([box.size(0)], dtype=torch.int64)*self.label_dict[i['label']]
-                    if count == 0:
-                        boxes = box
-                        labels = label
-                    else:
-                        boxes = torch.cat((boxes, box), 0) 
-                        labels = torch.cat((labels, label), 0)
-                    count+=1
-            except:
-                pass
-            finally:
-                pass
+				list_string (list): List of strings to be converted
+		"""
+		out = []
+		for i in list_string:
+			x = i.split(',')
+			x = [float(j) for j in x]
+			out.append(x)
+		out = torch.tensor(out) 
+		return out     
+
+
+
+	def annotation_conversion(self, total_annotation):
+		"""
+			Function to convert annotations into a form usable in a deep learning object detection model
+
+			Args:
+
+				annotation (list): list of dictionaries containing all annotation infromation
+		"""
+		annotation = {}
+
+		count = 0
+		for i in total_annotation['annotation']:
+			try:
+				#print("ENTERING TRY")
+				if (i['condition']=='Detected') and ('bounding_boxes' in i.keys()):
+					#print("ABOUT TO DESTRING")
+					box = self.destring(i['bounding_boxes'])
+					#print("DESTRING DONE!!!")
+					#print(box)
+					label = torch.ones([box.size(0)], dtype=torch.int64)*self.label_dict[i['label']]
+					if count == 0:
+						boxes = box
+						labels = label
+					else:
+						boxes = torch.cat((boxes, box), 0) 
+						labels = torch.cat((labels, label), 0)
+					count+=1
+			except:
+				pass
+			finally:
+				pass
  
-        annotation['boxes'] = boxes
-        annotation['labels'] = labels
+		annotation['boxes'] = boxes
+		annotation['labels'] = labels
 
-        return annotation
+		return annotation
 
-    
+	
 
-    def __len__(self):
-        return len(self.annotation_dict)
-        #return 500
+	def __len__(self):
+		return len(self.annotation_dict)
+		#return 500
 
-    def __getitem__(self, index):
+	def __getitem__(self, index):
 
-        # open annotated json as dataframe and get corresponding image path
-        if self.local==False:
-            obj1 = self.s3.get_object(Bucket="followup-annotated-data", Key=os.path.join('followup_data/', self.annotation_dict[index][0]))
-            annotation_df = pd.read_json(obj1['Body'])
-        else:
-            annotation_df = pd.read_json(os.path.join(self.data_dir, 'followup_data/', self.annotation_dict[index][0]))
+		# open annotated json as dataframe and get corresponding image path
+		if self.local==False:
+			obj1 = self.s3.get_object(Bucket="followup-annotated-data", Key=os.path.join('followup_data/', self.annotation_dict[index][0]))
+			annotation_df = pd.read_json(obj1['Body'])
+		else:
+			annotation_df = pd.read_json(os.path.join(self.data_dir, 'followup_data/', self.annotation_dict[index][0]))
 
-        
-        image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
-        # extract bounding boxes and labels corresponding to image
-        total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
+		
+		image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
+		# extract bounding boxes and labels corresponding to image
+		total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
 
-        #-------------------------------------------------------------------------------------------------------
-        #try:
-        annotation = self.annotation_conversion(total_annotation)
-            #print("PASSED", self.annotation_dict[index], index)
-        #except:
-            #print("FAILED", self.annotation_dict[index], index)
-        #finally:
-            #pass
-        #-------------------------------------------------------------------------------------------------------
-        # import image, convert to RBG, conver to tensor and make uniform size
-        if self.local == False:
-            obj2 = self.s3.get_object(Bucket="followup-annotated-data", Key=image_path)
-            image = Image.open(obj2['Body'])
-        else:
-            image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
+		#-------------------------------------------------------------------------------------------------------
+		#try:
+		annotation = self.annotation_conversion(total_annotation)
+			#print("PASSED", self.annotation_dict[index], index)
+		#except:
+			#print("FAILED", self.annotation_dict[index], index)
+		#finally:
+			#pass
+		#-------------------------------------------------------------------------------------------------------
+		# import image, convert to RBG, conver to tensor and make uniform size
+		if self.local == False:
+			obj2 = self.s3.get_object(Bucket="followup-annotated-data", Key=image_path)
+			image = Image.open(obj2['Body'])
+		else:
+			image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
 
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
+		if image.mode != 'RGB':
+			image = image.convert('RGB')
 
-        image = self.Image_Process.expand(image)
-        if self.transform:
-            image = self.transform(image)
-        image = self.Image_Process.uniform_size(image)
-
-
-
-        return image, annotation
+		image = self.Image_Process.expand(image)
+		if self.transform:
+			image = self.transform(image)
+		image = self.Image_Process.uniform_size(image)
 
 
 
-        
-        
+		return image, annotation
+
+
+
+		
+		
 
 
 
