@@ -25,7 +25,7 @@ def get_args():
 	parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
 	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/annotation_dict.pkl", help="path to local pickled annotation path dictionary")
-	parser.add_argument("--remote_pickle_path", type=str, default="annotation_dict.pkl")
+	parser.add_argument("--remote_pickle_path", type=str, default="train_annotation_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
 	parser.add_argument("--image_size", type=tuple, default=(1000,1000), help="Size all images will be transformed to (height,width)")
@@ -157,17 +157,17 @@ class Trainer:
 
 				print(f'====> Epoch: {epoch} Average loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
 
-			with torch.no_grad():
-				self.model.eval()
-				for image, annotation in tqdm(self.train_loader, desc= "Test Epoch "+str(epoch)):
-					test_loss = 0
+			# with torch.no_grad():
+			# 	self.model.eval()
+			# 	for image, annotation in tqdm(self.train_loader, desc= "Validation Epoch "+str(epoch)):
+			# 		test_loss = 0
 
-					#image = [im.to(self.device) for im in image]
-					image = [im.cuda() for im in image]
-					#annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
-					annotation = [{k: v.cuda() for k, v in t.items()} for t in annotation]
+			# 		#image = [im.to(self.device) for im in image]
+			# 		image = [im.cuda() for im in image]
+			# 		#annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
+			# 		annotation = [{k: v.cuda() for k, v in t.items()} for t in annotation]
 
-					output = self.model(image)
+			# 		output = self.model(image)
 			print("[DONE EPOCH{}".format(epoch))
 
 		print("[DONE]")
