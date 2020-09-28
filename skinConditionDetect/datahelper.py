@@ -37,17 +37,17 @@ class Annotation_Dict:
 		
 
 
-	def set_pickle(self):
-		annotation_dict = {}
-		count = 0 
-		for filename in tqdm(os.listdir(self.filepath)):
-			df = pd.read_json(self.filepath+filename)
-			df = df.loc[(df.image_details.notnull()) or (df.image_path.notnull()),:].reset_index()
-			for i in range(len(df)):
-				annotation_dict[count] = (filename, i)
-				count+=1
-		with open(self.pickle_file_name, 'wb') as handle:
-			pickle.dump(followup_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	# def set_pickle(self):
+	# 	annotation_dict = {}
+	# 	count = 0 
+	# 	for filename in tqdm(os.listdir(self.filepath)):
+	# 		df = pd.read_json(self.filepath+filename)
+	# 		df = df.loc[(df.image_details.notnull()) or (df.image_path.notnull()),:].reset_index()
+	# 		for i in range(len(df)):
+	# 			annotation_dict[count] = (filename, i)
+	# 			count+=1
+	# 	with open(self.pickle_file_name, 'wb') as handle:
+	# 		pickle.dump(followup_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 	def get_pickle(self):
 		with open(self.pickle_file_name, 'rb') as handle:
@@ -65,7 +65,7 @@ class CreateDataset(torch.utils.data.Dataset):
 	"""
 	
 	
-	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=True, transform=None):
+	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", transform=None):
 		
 		"""
 			Args:
@@ -77,6 +77,10 @@ class CreateDataset(torch.utils.data.Dataset):
 			img_size (tuple): Size to convert all images to (height, width)
 
 			local (boolean): True if running on local machine, False if running on AWS
+
+			access_key (string): Access Key for AWS
+
+			secret_access_key (string) Secret Access Key for AWS
 			
 			transform (callable, optional): Optional transform to be applied on a sample
 		"""
@@ -85,8 +89,14 @@ class CreateDataset(torch.utils.data.Dataset):
 		self.data_dir = data_directory
 		self.img_size = img_size
 		self.local = local
+		if self.local==1:
+			self.local=True
+		else:
+			self.local=False
+		self.access_key = access_key
+		self.secret_access_key = secret_access_key
 		self.transform = transform
-		self.s3 = boto3.client('s3')
+		#self.s3 = boto3.client('s3')
 
 		# get pickled dictionary for annotation paths
 		self.annotation_source = Annotation_Dict(self.pickle_path)
@@ -161,17 +171,18 @@ class CreateDataset(torch.utils.data.Dataset):
 	
 
 	def __len__(self):
-		return len(self.annotation_dict)
-		#return 500
+		#return len(self.annotation_dict)
+		return 10
 
 	def __getitem__(self, index):
 
 		# open annotated json as dataframe and get corresponding image path
-		if self.local==False:
-			obj1 = self.s3.get_object(Bucket="followup-annotated-data", Key=os.path.join('followup_data/', self.annotation_dict[index][0]))
-			annotation_df = pd.read_json(obj1['Body'])
-		else:
+		if self.local is True:
 			annotation_df = pd.read_json(os.path.join(self.data_dir, 'followup_data/', self.annotation_dict[index][0]))
+		else:
+			s3 = boto3.client("s3", aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_access_key)
+			obj1 = s3.get_object(Bucket="followup-annotated-data", Key=os.path.join('followup_data/', self.annotation_dict[index][0]))
+			annotation_df = pd.read_json(obj1['Body'])
 
 		
 		image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
@@ -188,11 +199,12 @@ class CreateDataset(torch.utils.data.Dataset):
 			#pass
 		#-------------------------------------------------------------------------------------------------------
 		# import image, convert to RBG, conver to tensor and make uniform size
-		if self.local == False:
-			obj2 = self.s3.get_object(Bucket="followup-annotated-data", Key=image_path)
-			image = Image.open(obj2['Body'])
-		else:
+		if self.local is True:
 			image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
+		else:
+			s3 = boto3.client("s3", aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_access_key)
+			obj2 = s3.get_object(Bucket="followup-annotated-data", Key=image_path)
+			image = Image.open(obj2['Body'])
 
 		if image.mode != 'RGB':
 			image = image.convert('RGB')
