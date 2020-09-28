@@ -58,17 +58,17 @@ class Trainer:
 	def __init__(self):
 
 		self.ops = get_args()
-		self.device = torch.device("cuda:0") #if torch.cuda.is_available() else "cpu")
+		self.device = torch.device("cuda") #if torch.cuda.is_available() else "cpu")
 		self.model_version = self.ops.model_version
 		
 		# Import model
 		if self.model_version==1:
 			self.model = fasterrcnn_resnet50_fpn(pretrained=True)#.to(self.device) 
-			self.model = self.model.cuda()
 			self.model_name = "FASTERRCNN"
 			self.num_classes = 7
 			self.in_features = self.model.roi_heads.box_predictor.cls_score.in_features
 			self.model.roi_heads.box_predictor = FastRCNNPredictor(self.in_features, self.num_classes)
+			self.model = self.model.cuda()
 		else:
 			# ENTER OTHER MODEL INITIALIZATIONS HERE
 			pass
@@ -173,9 +173,9 @@ class Trainer:
 		print("[DONE]")
 
 		if self.local==True:
-			torch.save(model, os.path.join(self.save_path, self.model_name+".pt"))
+			torch.save(self.model, os.path.join(self.save_path, self.model_name+".pt"))
 		else:
-			torch.save(model, os.path.join("s3://models-and-checkpoints/models", self.model_name+".pt"))
+			torch.save(self.model, self.model_name+".pt")
 
 
 				
@@ -193,7 +193,7 @@ class Trainer:
 		"""
 		Function for saving model parameters
 		"""
-		if selflocal==True:
+		if self.local==True:
 			save_path = os.path.join(self.save_path, model_name)
 
 			if not os.path.exists(save_path):
@@ -202,9 +202,11 @@ class Trainer:
 			torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
 				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path+"/params.tar")
 		else: 
-			save_path = os.path.join("s3://models-and-checkpoints/checkpoints", model_name+".tar")
+			save_path =  model_name+".tar"
 			torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
 				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path)
+
+			
 
 
 		
@@ -219,8 +221,8 @@ class Trainer:
 			load_path = os.path.join(self.save_path, model_name, "params.tar")
 			checkpoint = torch.load(load_path)
 		else:
-			obj = self.s3.get_object(Bucket="models-and-checkpoints", Key=os.path.join("checkpoints/", model_name+".tar"))
-			checkpoint = torch.load(obj['Body'])
+			#obj = self.s3.get_object(Bucket="models-and-checkpoints", Key=os.path.join("checkpoints/", model_name+".tar"))
+			checkpoint = torch.load(model_name+".tar")
 
 		model.load_state_dict(checkpoint["model_state_dict"])
 		optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
