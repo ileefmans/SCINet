@@ -9,6 +9,7 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import argparse
 from tqdm import tqdm
+import boto3
 
 
 
@@ -35,6 +36,8 @@ def get_args():
 	parser.add_argument("--epochs", type=int, default=10, help="Number of epochs model will be trained for")
 	parser.add_argument("--local_save_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data/model_checkpoints", help="Path to folder to save model parameters after trained")
 	parser.add_argument("--load_weights", type=bool, default=False, help="Determines whether or not pretrained weights will be loaded during training")
+	parser.add_argument("--access_key", type=str, default="", help="AWS Access Key")
+	parser.add_argument("--secret_access_key", type=str, default="", help="AWS Secret Access Key")
 
 
 
@@ -55,12 +58,14 @@ class Trainer:
 	def __init__(self):
 
 		self.ops = get_args()
-		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+		self.device = torch.device("cuda:0") #if torch.cuda.is_available() else "cpu")
 		self.model_version = self.ops.model_version
 		
 		# Import model
 		if self.model_version==1:
-			self.model = fasterrcnn_resnet50_fpn(pretrained=True).to(self.device) 
+			self.model = fasterrcnn_resnet50_fpn(pretrained=True)#.to(self.device) 
+			self.model = self.model.cuda()
+			self.model_name = "FASTERRCNN"
 			self.num_classes = 7
 			self.in_features = self.model.roi_heads.box_predictor.cls_score.in_features
 			self.model.roi_heads.box_predictor = FastRCNNPredictor(self.in_features, self.num_classes)
@@ -70,6 +75,8 @@ class Trainer:
 
 		# Set local or remote paths
 		self.local = self.ops.local
+		self.access_key = self.ops.access_key
+		self.secret_access_key = self.ops.secret_access_key
 		print("LOCAL: ", self.local)
 		if self.local ==1:
 			self.local=True
@@ -93,12 +100,13 @@ class Trainer:
 		self.learning_rate = self.ops.learning_rate
 		self.epochs = self.ops.epochs
 		self.load_weights=self.ops.load_weights
+		self.s3 = boto3.client('s3')
 
 
 
 		# Instantiate Dataloaders
 
-		self.dataset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, transform=self.transform)
+		self.dataset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, transform=self.transform)
 		self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
 
 		# Instatntiate Optimizer
@@ -110,7 +118,7 @@ class Trainer:
 	def train(self):
 		# Load weights if applicable
 		if self.load_weights == True:
-			start_epoch, loss = self.load_model(self.model, self.optimizer, "FASTERRCNN")
+			start_epoch, loss = self.load_checkpoint(self.model, self.optimizer, self.model_name)
 			start_epoch+=1
 			print("\n \n [WEIGHTS LOADED]")
 		else:
@@ -128,6 +136,7 @@ class Trainer:
 				counter=0
 				for image, annotation in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
+
 					# image tensors and bounding box and label tensors to device
 					image = [im.to(self.device) for im in image]
 					annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
@@ -144,7 +153,7 @@ class Trainer:
 					self.optimizer.step()
 					
 					if counter%10==0:
-						self.save_model(self.model, self.optimizer, "FASTERRCNN", epoch, train_loss)
+						self.save_checkpoint(self.model, self.optimizer, self.model_name, epoch, train_loss)
 
 				print(f'====> Epoch: {epoch} Average loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
 
@@ -153,14 +162,20 @@ class Trainer:
 				for image, annotation in tqdm(self.train_loader, desc= "Test Epoch "+str(epoch)):
 					test_loss = 0
 
-					image = [im.to(self.device) for im in image]
-					annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
+					#image = [im.to(self.device) for im in image]
+					image = [im.cuda() for im in image]
+					#annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
+					annotation = [{k: v.cuda() for k, v in t.items()} for t in annotation]
 
 					output = self.model(image)
 			print("[DONE EPOCH{}".format(epoch))
 
 		print("[DONE]")
 
+		if self.local==True:
+			torch.save(model, os.path.join(self.save_path, self.model_name+".pt"))
+		else:
+			torch.save(model, os.path.join("s3://models-and-checkpoints/models", self.model_name+".pt"))
 
 
 				
@@ -174,32 +189,46 @@ class Trainer:
 
 
 	#SAVE MODEL PARAMETERS
-	def save_model(self, model, optimizer, model_name, epoch, loss):
+	def save_checkpoint(self, model, optimizer, model_name, epoch, loss):
 		"""
 		Function for saving model parameters
 		"""
-		save_path = os.path.join(self.save_path, model_name)
+		if selflocal==True:
+			save_path = os.path.join(self.save_path, model_name)
 
-		if not os.path.exists(save_path):
-			os.makedirs(save_path)
+			if not os.path.exists(save_path):
+				os.makedirs(save_path)
 
-		torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
+			torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
 				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path+"/params.tar")
+		else: 
+			save_path = os.path.join("s3://models-and-checkpoints/checkpoints", model_name+".tar")
+			torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
+				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path)
+
+
+		
 
 
 	#LOAD MODEL PARAMETERS
-	def load_model(self, model, optimizer, model_name):
+	def load_checkpoint(self, model, optimizer, model_name):
 		"""
 		Function for loading model parameters 
 		"""
-		load_path = os.path.join(self.save_path, model_name, "params.tar")
-		checkpoint = torch.load(load_path)
+		if self.local==True:
+			load_path = os.path.join(self.save_path, model_name, "params.tar")
+			checkpoint = torch.load(load_path)
+		else:
+			obj = self.s3.get_object(Bucket="models-and-checkpoints", Key=os.path.join("checkpoints/", model_name+".tar"))
+			checkpoint = torch.load(obj['Body'])
+
 		model.load_state_dict(checkpoint["model_state_dict"])
 		optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 		epoch = checkpoint["epoch"]
 		loss = checkpoint["loss"]
 
 		return epoch, loss
+
 
 
 
