@@ -59,8 +59,9 @@ def create_modules(blocks):
 	for index, x in enumerate(blocks[1:]):
 		module = nn.Sequential()
 
-		# Determine Activation Function
+		# Define Convolutional Layer parameters
 		if (x['type'] == 'convolutional'):
+			# Determine Activation Function
 			activation= x['activation']
 
 			# Determine whether or not batch normalization
@@ -76,11 +77,72 @@ def create_modules(blocks):
 			padding = int(x['pad'])
 			kernel_size = int(x['size'])
 			stride = int(x['stride'])
-
 			if padding:
 				pad = (kernel_size - 1)//2
 			else:
 				pad = 0
+
+			#Create Convolutional layer and add to Sequential() module
+			conv = nn.Conv2d(prev_filters, filters, kernel_size, stride, pad, bias=bias)
+			module.add_module("conv_{0}".format(index), conv)
+
+			#Create Batch Norm layer and add to Sequential() module
+			if batch_normalize:
+				bn = nn.BatchNorm2d(filters)
+				module.add_module("batch_norm_{0}".format(index), bn)
+
+			# Create Activation layer and add to Sequential() module
+			if activation == "leaky":
+				act = nn.LeakyReLU(0.1, inplace=True)
+				module.add_module("leaky_{0}".format(index), act)
+
+		# Define Upsample layer parameters
+		elif (x['type'] =='upsample'):
+			stride = int(x["stride"])
+			upsample = nn.Upsample(scale_factor=2, mode = 'bilinear')
+			module.add_module("upsample_{}".format(index), upsample)
+
+		# Define route layer
+		elif (x['type'] == "route"):
+			x['layers'] = x['layers'].split(',')
+
+			#Create start and end of route
+			start = int(x["layers"][0])
+			try:
+				end = int(x["layers"][1])
+			except:
+				end = 0
+
+
+			if start>0:
+				start = start - index
+			if end>0:
+				end = end - index
+
+			route = EmptyLayer()
+
+			# Add route to Sequential() module
+			module.add_module("route_{0}".format(index), route)
+
+			if end<0:
+				filters = output_filters[index+start] + output_filters[index+end]
+			else:
+				filters = output_filters[index+start]
+
+			# Define skip connection
+		elif (x['type'] == 'shortcut'):
+			shortcut = EmptyLayer()
+			module.add_module("shortcut_{}".format(index), shortcut)
+			
+
+
+
+
+
+
+
+
+
 
 
 
