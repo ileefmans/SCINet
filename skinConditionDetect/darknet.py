@@ -52,7 +52,7 @@ def create_modules(blocks):
 			blocks (list): list of configuration blocks
 	"""
 	net_info = blocks[0]
-	module_list = nn.Module_list()    #Initialize module list
+	module_list = nn.ModuleList()    #Initialize module list
 	prev_filters = 3
 	output_filters = []
 
@@ -180,7 +180,9 @@ class DetectionLayer(nn.Module):
 		super(DetectionLayer, self).__init__()
 		self.anchors = anchors
 
-
+if __name__ == "__main__":
+	blocks = parse_cfg("yolov3.cfg")
+	print(create_modules(blocks))
 
 
 
