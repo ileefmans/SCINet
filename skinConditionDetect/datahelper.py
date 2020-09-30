@@ -8,6 +8,7 @@ from tqdm import tqdm
 import numpy as np
 from preprocess import Image_Process
 import boto3
+import cv2
 
 
 
@@ -65,7 +66,7 @@ class CreateDataset(torch.utils.data.Dataset):
 	"""
 	
 	
-	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", transform=None):
+	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", geometric=False transform=None):
 		
 		"""
 			Args:
@@ -171,8 +172,8 @@ class CreateDataset(torch.utils.data.Dataset):
 	
 
 	def __len__(self):
-		return len(self.annotation_dict)
-		#return 10
+		#return len(self.annotation_dict)
+		return 1
 
 	def __getitem__(self, index):
 
@@ -188,26 +189,29 @@ class CreateDataset(torch.utils.data.Dataset):
 		image_path = annotation_df.iloc[self.annotation_dict[index][1]].image_path
 		# extract bounding boxes and labels corresponding to image
 		total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
-
-		#-------------------------------------------------------------------------------------------------------
-		#try:
 		annotation = self.annotation_conversion(total_annotation)
-			#print("PASSED", self.annotation_dict[index], index)
-		#except:
-			#print("FAILED", self.annotation_dict[index], index)
-		#finally:
-			#pass
-		#-------------------------------------------------------------------------------------------------------
-		# import image, convert to RBG, conver to tensor and make uniform size
+			
 		if self.local is True:
-			image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
+			if self.geometric==True:
+				image = cv2.imread(os.path.join(self.data_dir, 'images', image_path))
+				return image, annotation
+			else:
+				image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
+
 		else:
 			s3 = boto3.client("s3", aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_access_key)
 			obj2 = s3.get_object(Bucket="followup-annotated-data", Key=image_path)
-			image = Image.open(obj2['Body'])
+
+			if self.geometric==True:
+				image.cv2.imread(obj2['Body'])
+				return image, annotation
+			else:
+				image = Image.open(obj2['Body'])
 
 		if image.mode != 'RGB':
 			image = image.convert('RGB')
+
+		
 
 		image = self.Image_Process.expand(image)
 		if self.transform:
