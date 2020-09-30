@@ -66,7 +66,7 @@ class CreateDataset(torch.utils.data.Dataset):
 	"""
 	
 	
-	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", geometric=False transform=None):
+	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", geometric=False, transform=None):
 		
 		"""
 			Args:
