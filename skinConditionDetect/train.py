@@ -23,6 +23,7 @@ from datahelper import CreateDataset, my_collate
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
 	parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
+	parser.add_argument("--pretrained", type=bool, default=True, help="Model backbone trained on COCO dataset")
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
 	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/annotation_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="train_annotation_dict.pkl")
@@ -60,10 +61,11 @@ class Trainer:
 		self.ops = get_args()
 		self.device = torch.device("cuda") #if torch.cuda.is_available() else "cpu")
 		self.model_version = self.ops.model_version
+		self.pretrained = self.ops.pretrained
 		
 		# Import model
 		if self.model_version==1:
-			self.model = fasterrcnn_resnet50_fpn(pretrained=True)#.to(self.device) 
+			self.model = fasterrcnn_resnet50_fpn(pretrained=self.pretrained)#.to(self.device) 
 			self.model_name = "FASTERRCNN"
 			self.num_classes = 7
 			self.in_features = self.model.roi_heads.box_predictor.cls_score.in_features
