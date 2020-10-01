@@ -3,9 +3,9 @@ from facealign import FaceAlign, CalculateMatches
 
 def get_args():
     parser = argparse.ArgumentParser(description = "Model Options")
-    parser.add_argument("-p", "--shape_predictor", required=True, help="path to facial landmark predictor")
-    parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
-    parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
+    parser.add_argument("--predictor", type=str default='shape_predictor_68_face_landmarks.dat', help="facial landmark predictor from dlib")
+    #parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
+    #parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
     parser.add_argument("--local", type=bool, default=False, help="False if running on AWS, True if running locally")
     parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/train_annotation_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="train_annotation_dict.pkl")
@@ -22,4 +22,6 @@ class GeoMatch:
 	def __init__(self):
 
 		self.ops = get_args()
-		self.im
+		self.predictor = self.ops.predictor
+		self.local = self.ops.local
+		
