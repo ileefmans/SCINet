@@ -3,12 +3,12 @@ from datahelper2 import CreateDataset, my_collate
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description = "Model Options")
-    parser.add_argument("--predictor", type=str default='shape_predictor_68_face_landmarks.dat', help="facial landmark predictor from dlib")
-    #parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
-    #parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
-    parser.add_argument("--local", type=bool, default=False, help="False if running on AWS, True if running locally")
-    parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
+	parser = argparse.ArgumentParser(description = "Model Options")
+	parser.add_argument("--predictor", type=str, default='shape_predictor_68_face_landmarks.dat', help="facial landmark predictor from dlib")
+	#parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
+	#parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
+	parser.add_argument("--local", type=bool, default=False, help="False if running on AWS, True if running locally")
+	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
@@ -16,8 +16,10 @@ def get_args():
 	parser.add_argument("--batch_size", type=int, default=1, help="Minibatch size")
 	parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
 	parser.add_argument("--geometric", type=bool, default=True, help="True: return samples condusive for geometric transform, False: return smaples condusive for deep learning")
+	parser.add_argument("--access_key", type=str, default="", help="AWS Access Key")
+	parser.add_argument("--secret_access_key", type=str, default="", help="AWS Secret Access Key")
 
-    return vars(parser.parse_args())
+	return vars(parser.parse_args())
 
 
 
@@ -42,9 +44,11 @@ class GeoMatch:
 		self.batch_size = self.ops.batch_size
 		self.num_workers = self.ops.num_workers
 		self.transform = torchvision.transforms.ToTensor()
+		self.access_key = self.ops.access_key
+		self.secret_access_key = self.ops.secret_access_key
 
 		# Initialize train loader
-		self.trainset = CreateDataset(self.pickle_path, self.data_directory, local=self.local, geometric=self.geometric, transform=self.transform)
+		self.trainset = CreateDataset(self.pickle_path, self.data_directory, local=self.local, geometric=self.geometric, access_key=self.access_key, secret_access_key=self.secret_access_key, transform=self.transform)
 		self.train_loader = DataLoader(dataset=self.trainset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
 
 	def run(self):
@@ -62,16 +66,16 @@ class GeoMatch:
 			box1_list = []
 			matched_boxes = {}
 			for i in range(len(boxes1)):
-			    for j in range(len(boxes2)):
-			        ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
-			        IoU = ca.evaluate()
-			        if IoU>0:
-			            if i in box1_list:
-			                if IoU > matched_boxes[i][0]:
-			                    matched_boxes[i] = (IoU, j)
-			            else:
-			                matched_boxes[i] = (IoU, j)
-			                box1_list.append(i)
+				for j in range(len(boxes2)):
+					ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
+					IoU = ca.evaluate()
+					if IoU>0:
+						if i in box1_list:
+							if IoU > matched_boxes[i][0]:
+								matched_boxes[i] = (IoU, j)
+						else:
+							matched_boxes[i] = (IoU, j)
+							box1_list.append(i)
 
 
 			results.append(maxed_boxes)
