@@ -10,6 +10,7 @@ import numpy as np
 
 
 
+
 class FaceAlign:
     def __init__(self, sample, predictor):
         """
