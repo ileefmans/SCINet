@@ -191,44 +191,61 @@ class CreateDataset(torch.utils.data.Dataset):
 
 
 		
-		image_path1 = annotation_df1.iloc[self.annotation_dict[index][1]].image_path
-		image_path2 = annotation_df2.iloc[self.annotation_dict[index][1]].image_path
+		image_path1 = annotation_df1.iloc[self.annotation_dict[index][0][1]].image_path
+		image_path2 = annotation_df2.iloc[self.annotation_dict[index][1][1]].image_path
 
-####--------------------------here
 		# extract bounding boxes and labels corresponding to image
-		total_annotation = annotation_df.iloc[self.annotation_dict[index][1]].image_details
-		annotation = self.annotation_conversion(total_annotation)
-			
+		total_annotation1 = annotation_df1.iloc[self.annotation_dict[index][0][1]].image_details
+		total_annotation2 = annotation_df2.iloc[self.annotation_dict[index][1][1]].image_details
+		annotation1 = self.annotation_conversion(total_annotation1)
+		annotation2 = self.annotation_conversion(total_annotation2)
+
+
+		
 		if self.local is True:
 			if self.geometric==True:
-				image = cv2.imread(os.path.join(self.data_dir, 'images', image_path))
-				return image, annotation
+				image1 = cv2.imread(os.path.join(self.data_dir, 'images', image_path1))
+				image2 = cv2.imread(os.path.join(self.data_dir, 'images', image_path2))
+				return image1, image2, annotation1, annotation2
 			else:
-				image =  Image.open(os.path.join(self.data_dir, 'images', image_path))
+				image1 =  Image.open(os.path.join(self.data_dir, 'images', image_path1))
+				image2 =  Image.open(os.path.join(self.data_dir, 'images', image_path2))
+
+
 
 		else:
 			s3 = boto3.client("s3", aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_access_key)
-			obj2 = s3.get_object(Bucket="followup-annotated-data", Key=image_path)
+			obj21 = s3.get_object(Bucket="followup-annotated-data", Key=image_path1)
+			obj22 = s3.get_object(Bucket="followup-annotated-data", Key=image_path2)
+
+####--------------------------here
 
 			if self.geometric==True:
-				image.cv2.imread(obj2['Body'])
-				return image, annotation
+				image1 = cv2.imread(obj21['Body'])
+				image2 = cv2.imread(obj22['Body'])
+				return image1, image2, annotation1, annotation2
 			else:
-				image = Image.open(obj2['Body'])
+				image1 = Image.open(obj21['Body'])
+				image2 = Image.open(obj22['Body'])
 
-		if image.mode != 'RGB':
-			image = image.convert('RGB')
+		if image1.mode != 'RGB':
+			image1 = image1.convert('RGB')
+		if image2.mode != 'RGB':
+			image2 = image2.convert('RGB')
 
 		
 
-		image = self.Image_Process.expand(image)
+		image1 = self.Image_Process.expand(image1)
+		image2 = self.Image_Process.expand(image2)
 		if self.transform:
-			image = self.transform(image)
-		image = self.Image_Process.uniform_size(image)
+			image1 = self.transform(image1)
+			image2 = self.transform(image2)
+		image1 = self.Image_Process.uniform_size(image1)
+		image2 = self.Image_Process.uniform_size(image2)
 
 
 
-		return image, annotation
+		return image1, image2, annotation1, annotation2
 
 
 
