@@ -18,7 +18,7 @@ class FaceAlign:
         """
             Args:
                 image (JPEG): Image to be processed
-                predictor: facial landmark predictor from dlib
+                predictor (dlib predictor): facial landmark predictor from dlib
         """
         self.sample = sample
         self.image = self.sample[0][0]
@@ -72,6 +72,45 @@ class FaceAlign:
             aligned_boxes.append((aligned_box, im[1]))
 
         return aligned_face, aligned_boxes
+
+
+
+
+class CalculateMatches:
+    def __init__(self, image1, image2, box_image1, box_image2):
+        """
+            Args:
+
+                image1 (opencv image): First image post-alignment
+                image2 (opencv image): Second image post-alignment
+                box_image1 (opencv image): First image of bounding box post-alignment
+                box_image2 (opencv image): Second image of bounding box post-alignment
+
+        """
+        self.im1 = image1
+        self.im2 = image2
+        self.box_im1 = box_image1
+        self.box_im2 = box_image2
+        
+    def calc_IoU(self):
+        if self.box_im1[1]!=self.box_im2[1]:
+            return False
+        union = np.count_nonzero(self.box_im1[0] + self.box_im2[0])
+        total  = np.count_nonzero(self.box_im1[0]) + np.count_nonzero(self.box_im2[0])
+        intersection = total-union
+        IoU = intersection/union
+        return IoU
+    def calc_confidence(self):
+        pass
+    def evaluate(self):
+        IoU = self.calc_IoU()
+        return IoU
+
+
+
+
+
+
 
 
 
