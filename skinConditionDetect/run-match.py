@@ -1,5 +1,5 @@
 from facealign import FaceAlign, CalculateMatches
-from datahelper2 import CreateDataset
+from datahelper2 import CreateDataset, my_collate
 
 
 def get_args():
@@ -41,10 +41,50 @@ class GeoMatch:
 		self.shuffle = shuffle
 		self.batch_size = self.ops.batch_size
 		self.num_workers = self.ops.num_workers
+		self.transform = torchvision.transforms.ToTensor()
 
-		dataset = CreateDataset(pickle_path, data_directory, local=True, geometric=True, transform = torchvision.transforms.ToTensor())
+		# Initialize train loader
+		self.trainset = CreateDataset(self.pickle_path, self.data_directory, local=self.local, geometric=self.geometric, transform=self.transform)
+		self.train_loader = DataLoader(dataset=self.trainset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
+
+	def run(self):
+		results =[]
+		for sample in tqdm(train_loader):
+			sample1 = (sample[0], sample[2])
+			sample2 = (sample[1], sample[3])
+
+			fa1 = FaceAlign(sample1, predictor)
+			fa2 = FaceAlign(sample2, predictor)
+
+			image1, boxes1 = fa1.forward()
+			image2, boxes2 = fa2.forward()
+
+			box1_list = []
+			matched_boxes = {}
+			for i in range(len(boxes1)):
+			    for j in range(len(boxes2)):
+			        ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
+			        IoU = ca.evaluate()
+			        if IoU>0:
+			            if i in box1_list:
+			                if IoU > matched_boxes[i][0]:
+			                    matched_boxes[i] = (IoU, j)
+			            else:
+			                matched_boxes[i] = (IoU, j)
+			                box1_list.append(i)
 
 
+			results.append(maxed_boxes)
+
+		if len(results)==len(train_loader):
+			print("DONE")
+		else:
+			print(len(results), len(train_loader))
+
+
+if __name__ == "__main__":
+	geomatch = GeoMatch()
+	geomatch.run()
 
 
 
