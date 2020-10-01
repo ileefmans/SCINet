@@ -7,11 +7,6 @@ import dlib
 import cv2
 import numpy as np
 
-def get_args():
-    parser = argparse.ArgumentParser(description = "Model Options")
-    parser.add_argument("-p", "--shape_predictor", required=True, help="path to facial landmark predictor")
-    parser.add_argument("-i", "--image", required=True, help="path to input image")   
-    return vars(parser.parse_args())
 
 
 
