@@ -14,9 +14,11 @@ import cv2
 
 # Define collate function for dataloader
 def my_collate(batch):
-	data = [item[0] for item in batch]
-	target = [item[1] for item in batch]
-	return data, target
+    image0 = [item[0] for item in batch]
+    image1 = [item[1] for item in batch]
+    annotation0 = [item[2] for item in batch]
+    annotation1 = [item[3] for item in batch]
+    return image0, image1, annotation0, annotation1
 
 
 # Define class for creating and uploaded pickled annotation dictionary
