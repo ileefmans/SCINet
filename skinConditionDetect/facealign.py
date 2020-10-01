@@ -1,9 +1,11 @@
 from imutils.face_utils.facealigner import FaceAligner
 from imutils.face_utils import rect_to_bb
+from PIL import Image
 import imutils
 import argparse
 import dlib
 import cv2
+import numpy as np
 
 def get_args():
     parser = argparse.ArgumentParser(description = "Model Options")
