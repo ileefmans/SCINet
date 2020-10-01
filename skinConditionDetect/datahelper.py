@@ -96,6 +96,7 @@ class CreateDataset(torch.utils.data.Dataset):
 			self.local=False
 		self.access_key = access_key
 		self.secret_access_key = secret_access_key
+		self.geometric = geometric
 		self.transform = transform
 		#self.s3 = boto3.client('s3')
 
@@ -173,7 +174,7 @@ class CreateDataset(torch.utils.data.Dataset):
 
 	def __len__(self):
 		#return len(self.annotation_dict)
-		return 1
+		return 2
 
 	def __getitem__(self, index):
 
