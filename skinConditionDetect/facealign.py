@@ -11,32 +11,71 @@ def get_args():
     parser.add_argument("-i", "--image", required=True, help="path to input image")   
     return vars(parser.parse_args())
 
+
+
 class FaceAlign:
-    def __init__(self):
-        self.ops = get_args()
-        self.shape_predictor = self.ops['shape_predictor']
-        self.image = self.ops['image']
+    def __init__(self, sample, predictor):
+        """
+            Args:
+                image (JPEG): Image to be processed
+                predictor: facial landmark predictor from dlib
+        """
+        self.sample = sample
+        self.image = self.sample[0][0]
+        self.height = np.size(self.image, 0)
+        self.width = np.size(self.image, 1)
+        self.annotation = self.sample[1][0]
+        self.predictor = predictor
 
         #initialize face detector, facial landmark predictor, and facial aligner
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(self.shape_predictor)
+        self.predictor = dlib.shape_predictor(self.predictor)
         self.face_align = FaceAligner(self.predictor, desiredFaceWidth=256)
+        
+        self.gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        
 
-    def align(self):
 
-        image = cv2.imread(self.image)
-        image = imutils.resize(image, width=800)     # resize
+    def facebox(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # convert to greyscale
-
-        cv2.imshow("Input", image)
         rects = self.detector(gray, 2) # returns a list of bounding boxes around face
+        if len(rects) != 1:
+            raise Exception("Input Error: detected more than one face in input image, expected one face")
+        else:
+            (x, y, w, h) = rect_to_bb(rects[0])
+            return rects[0]
+        
+        
+    def annotation_extract(self, sample, height, width):
+        sample = sample[1][0]
+        output = []
+        for i in range(sample['boxes'].size(0)):
+            x = int(sample['boxes'][i,:][0])
+            y = int(sample['boxes'][i,:][1])
+            w = int(sample['boxes'][i,:][2])
+            h = int(sample['boxes'][i,:][3])
+            label = int(sample['labels'][i])
+            box_image = Image.new('RGB', (width, height))
+            box_image = cv2.cvtColor(np.array(box_image), cv2.COLOR_RGB2BGR)
+            cv2.rectangle(box_image,(x,y),(x+w,y+h),(0,255,0),-1)
+            output.append((box_image, label))
+        return output
 
-        for rect in rects:
-            # extract the ROI of the *original* face, then align the face
-            (x, y, w, h) = rect_to_bb(rect)
-            faceOrig = imutils.resize(image[y:y + h, x:x + w], width=256)
-            faceAligned = self.face_align.align(image, gray, rect)
-            
-            cv2.imshow("Original", faceOrig)
-            cv2.imshow("Aligned", faceAligned)
-            cv2.waitKey(0)
+
+    def forward(self):
+        facebox = self.facebox(self.image)
+        aligned_face = self.face_align.align(self.image, self.gray, facebox)
+        box_ims = self.annotation_extract(self.sample, self.height, self.width)
+        aligned_boxes = []
+        for im in box_ims:
+            aligned_box = self.face_align.align(im[0], self.gray, facebox)
+            aligned_boxes.append((aligned_box, im[1]))
+
+        return aligned_face, aligned_boxes
+
+
+
+
+
+
+
