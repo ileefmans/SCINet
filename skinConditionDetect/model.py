@@ -39,7 +39,7 @@ class STN(nn.Module):
 
 		# calculate dimentions after convolutions (needed for fully connected layers)
 		self.local_size  = round((round((self.input_size-(self.kernel_size1-1))/2) - (self.kernel_size2-1))/2)
-		print(self.local_size)
+		
 
 		# Regressor for the 3x2 affine matrix
 		self.fc_loc = nn.Sequential(
@@ -91,7 +91,7 @@ class ConvLayer(nn.Module):
 		self.kernel_size = kernel_size
 
 		self.conv = nn.Conv2d(self.in_channels, self.out_channels, kernel_size=self.kernel_size)
-		self.pool = nn.MaxPool2d(2)
+		self.pool = nn.MaxPool2d(kernel_size=2, return_indices=True)
 
 		self.dropout = dropout
 		self.drop = nn.Dropout2d()
@@ -100,9 +100,9 @@ class ConvLayer(nn.Module):
 		x = self.conv(x)
 		if self.dropout==True:
 			x = self.drop(x)
-		x = self.pool(x)
+		x, idx = self.pool(x)
 
-		return x
+		return x, idx
 		
 
 
@@ -118,11 +118,13 @@ class Encoder(nn.Module):
 	def forward(self, x):
 		stn = STN(x.size())
 		x = stn(x)
-		x = self.conv1(x)
+		x, idx1 = self.conv1(x)
 		stn = STN(x.size())
 		x = stn(x)
-		x = self.conv2(x)
-		return x
+		x, idx2 = self.conv2(x)
+		return x, [idx1, idx2]
+
+
 
 class Decoder(nn.Module):
 
