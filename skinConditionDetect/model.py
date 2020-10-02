@@ -24,11 +24,12 @@ class STN(nn.Module):
 		"""
 		super(STN, self).__init__()
 		self.input_size = input_size[-1]
+		self.channels = input_size[1]
 		# Spacial Transformer Localization Network
 		self.kernel_size1 = 7
 		self.kernel_size2 = 5
 		self.localization = nn.Sequential(
-			nn.Conv2d(3, 8, kernel_size=self.kernel_size1),
+			nn.Conv2d(self.channels, 8, kernel_size=self.kernel_size1),
 			nn.MaxPool2d(2, stride=2),
 			nn.ReLU(True),
 			nn.Conv2d(8,10, kernel_size=self.kernel_size2),
@@ -115,7 +116,11 @@ class Encoder(nn.Module):
 		self.conv2 = ConvLayer(10, 20, kernel_size=5, dropout=False)
 		
 	def forward(self, x):
+		stn = STN(x.size())
+		x = stn(x)
 		x = self.conv1(x)
+		stn = STN(x.size())
+		x = stn(x)
 		x = self.conv2(x)
 		return x
 
@@ -123,7 +128,7 @@ class Decoder(nn.Module):
 
 	def __init__(self):
 		super(Decoder, self).__init__()
-		
+
 
 
 
