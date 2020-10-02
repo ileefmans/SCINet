@@ -23,15 +23,14 @@ from datahelper import CreateDataset, my_collate
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
 	parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
-	parser.add_argument("--pretrained", type=bool, default=True, help="Model backbone trained on COCO dataset")
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
-	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/annotation_dict.pkl", help="path to local pickled annotation path dictionary")
-	parser.add_argument("--remote_pickle_path", type=str, default="train_annotation_dict.pkl")
+	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
+	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
-	parser.add_argument("--image_size", type=tuple, default=(1000,1000), help="Size all images will be transformed to (height,width)")
+	parser.add_argument("--image_size", type=tuple, default=(256,256), help="Size all images will be transformed to (height,width)")
 	parser.add_argument("--batch_size", type=int, default=30, help="Minibatch size")
-	parser.add_argument("--num_workers", type=int, default=5, help="Number of workers for dataloader")
+	parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
 	parser.add_argument("--shuffle", type=bool, default=True, help="True if dataloader shuffles input samples before batching, False if samples are batched in order")
 	parser.add_argument("--learning_rate", type=float, default=1e-3, help="Learning rate for Adam Optimizer")
 	parser.add_argument("--epochs", type=int, default=10, help="Number of epochs model will be trained for")
@@ -39,11 +38,6 @@ def get_args():
 	parser.add_argument("--load_weights", type=bool, default=False, help="Determines whether or not pretrained weights will be loaded during training")
 	parser.add_argument("--access_key", type=str, default="", help="AWS Access Key")
 	parser.add_argument("--secret_access_key", type=str, default="", help="AWS Secret Access Key")
-
-
-
-
-
 
 
 	return parser.parse_args()
