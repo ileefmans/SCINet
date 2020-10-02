@@ -208,11 +208,11 @@ class IANet(nn.Module):
 		self.encoder = Encoder()
 
 	def forward(self, x):
-		x, idx, dim = self.encoder(x)
+		z, idx, dim = self.encoder(x)
 		decoder = Decoder(idx, dim)
-		x = decoder(x)
+		x = decoder(z)
 
-		return x
+		return x, z
 
 
 
