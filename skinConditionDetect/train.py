@@ -13,7 +13,7 @@ import boto3
 
 
 
-from datahelper import CreateDataset, my_collate, my_collate2
+from datahelper2 import CreateDataset, my_collate, my_collate2
 #from model import MVP
 
 
@@ -53,13 +53,13 @@ class Trainer:
 	def __init__(self):
 
 		self.ops = get_args()
-		self.device = torch.device("cuda") #if torch.cuda.is_available() else "cpu")
+		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
 		self.model_version = self.ops.model_version
 		
 		# Import model
 		if self.model_version==1:
-			self.branch1 = IANet().to(self.device) 
-			self.branch2 = IANet().to(self.device)
+			self.model = IANet().to(self.device) 
+			self.model_name = "IANet"
 		else:
 			# ENTER OTHER MODEL INITIALIZATIONS HERE
 			pass
@@ -98,19 +98,20 @@ class Trainer:
 		# Instantiate Dataloaders
 
 		self.dataset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, geometric=self.geometric, transform=self.transform)
-		if geometric==True:
+		if self.geometric==True:
 			self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
 		else:
 			self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate2)
 
 		# Instatntiate Optimizer
 		self.optimizer = torch.optim.Adam(self.model.parameters(), lr = self.learning_rate)
+		
 
 	# Loss Function
 	def loss_fcn(self,x1, x2, x1_hat, x2_hat, z1, z2):
-		BCEx1 = nn.functional.binary_cross_entropy(x1.view(-1, 3*256*256), x1_hat.view(-1, 3*256*256))
-		BCEx2 = nn.functional.binary_cross_entropy(x2.view(-1, 3*256*256), x2_hat.view(-1, 3*256*256))
-		BCEz1z2 = nn.functional.binary_cross_entropy(z1.view(-1, 20*61*61), z2.view(-1, 20*61*61))
+		BCEx1 = nn.functional.binary_cross_entropy(x1_hat.view(-1, 3*256*256), x1.view(-1, 3*256*256), reduction='sum')
+		BCEx2 = nn.functional.binary_cross_entropy(x2_hat.view(-1, 3*256*256), x2.view(-1, 3*256*256), reduction='sum')
+		BCEz1z2 = nn.functional.binary_cross_entropy(z1.view(-1, 20*61*61), z2.view(-1, 20*61*61), reduction='sum')
 		loss = (BCEx1 + BCEx2 + BCEz1z2)/3
 
 		return loss
@@ -135,23 +136,25 @@ class Trainer:
 
 			# TRAIN
 			if epoch>0:
-				self.branch1.train()
-				self.branch2.train()
+				self.model.train()
 				train_loss = 0
 				counter=0
 				for image1, image2, annotation1, annotation2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
 
 					# image tensors and bounding box and label tensors to device
-					image1.to(self.device)
-					image2.to(self.device)
+					image1 = image1.to(self.device) 
+					image2 = image2.to(self.device)
 
 
-					x1_hat, z1 = self.branch1(image1)
-					x2_hat, z2 = self.branch2(image2)
 
 
-					loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1, z2)
+
+					x1_hat, x2_hat, z1, z2 = self.model((image1, image2))
+
+
+
+					loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
 					train_loss+=loss
 
 					# Clear optimizer gradient
