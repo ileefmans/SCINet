@@ -15,6 +15,7 @@ import cv2
 # Define collate function for dataloader
 def my_collate(batch):
 	data = [item[0] for item in batch]
+	data = torch.stack(data)
 	target = [item[1] for item in batch]
 	#target = torch.LongTensor(target)
 	return data, target
@@ -66,7 +67,7 @@ class CreateDataset(torch.utils.data.Dataset):
 	"""
 	
 	
-	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", geometric=False, transform=None):
+	def __init__(self, pickle_path, data_directory, img_size = (256,256), local=1, access_key="", secret_access_key="", geometric=False, transform=None):
 		
 		"""
 			Args:
