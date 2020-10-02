@@ -20,6 +20,15 @@ def my_collate(batch):
     annotation1 = [item[3] for item in batch]
     return image0, image1, annotation0, annotation1
 
+def my_collate2(batch):
+    image0 = [item[0] for item in batch]
+    image1 = [item[1] for item in batch]
+    image0 = torch.stack(image0)
+    image1 = torch.stack(image1)
+    annotation0 = [item[2] for item in batch]
+    annotation1 = [item[3] for item in batch]
+    return image0, image1, annotation0, annotation1
+
 
 # Define class for creating and uploaded pickled annotation dictionary
 class Annotation_Dict:
@@ -67,7 +76,7 @@ class CreateDataset(torch.utils.data.Dataset):
 	"""
 	
 	
-	def __init__(self, pickle_path, data_directory, img_size = (1000,1000), local=1, access_key="", secret_access_key="", geometric=False, transform=None):
+	def __init__(self, pickle_path, data_directory, img_size = (256, 256), local=1, access_key="", secret_access_key="", geometric=False, transform=None):
 		
 		"""
 			Args:
@@ -175,7 +184,7 @@ class CreateDataset(torch.utils.data.Dataset):
 
 	def __len__(self):
 		#return len(self.annotation_dict)
-		return 1
+		return 2
 
 	def __getitem__(self, index):
 
