@@ -25,6 +25,8 @@ def get_args():
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
 	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
+	parser.add_argument("--local_val_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local val pickled annotation path dictionary")
+	parser.add_argument("--remote_val_pickle_path", type=str, default="simple_val_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
 	parser.add_argument("--image_size", type=tuple, default=(256,256), help="Size all images will be transformed to (height,width)")
@@ -61,7 +63,7 @@ class Trainer:
 		self.model = IANet().to(self.device)
 		
 
-		self.model_name = "IANet"
+		self.model_name = "SCINet"
 
 		#else:
 			# ENTER OTHER MODEL INITIALIZATIONS HERE
@@ -76,12 +78,14 @@ class Trainer:
 			self.local=True
 			print("TRUE")
 			self.pickle_path = self.ops.local_pickle_path
+			self.val_pickle_path = self.ops.local_val_pickle_path
 			self.data_directory = self.ops.local_data_directory
 			self.save_path = self.ops.local_save_path
 		else:
 			self.local=False
 			print("False")
 			self.pickle_path = self.ops.remote_pickle_path
+			self.val_pickle_path = self.ops.remote_val_pickle_path
 			self.data_directory = self.ops.remote_data_directory
 			
 
@@ -100,11 +104,14 @@ class Trainer:
 
 		# Instantiate Dataloaders
 
-		self.dataset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, geometric=self.geometric, transform=self.transform)
+		self.trainset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, geometric=self.geometric, transform=self.transform)
+		self.valset = CreateDataset(self.val_pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, geometric=self.geometric, transform=self.transform)
 		if self.geometric==True:
-			self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
+			self.train_loader = DataLoader(dataset=self.trainset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
+			self.val_loader = DataLoader(dataset=self.valset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
 		else:
-			self.train_loader = DataLoader(dataset=self.dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate2)
+			self.train_loader = DataLoader(dataset=self.trainset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate2)
+			self.val_loader = DataLoader(dataset=self.valset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate2)
 
 		# Instatntiate Optimizer
 		self.optimizer = torch.optim.Adam(self.model.parameters(), lr = self.learning_rate)
@@ -141,54 +148,68 @@ class Trainer:
 		for epoch in range(start_epoch, self.epochs+1):
 
 			# TRAIN
-			if epoch>0:
-				self.model.train()
+			#if epoch>0:
+			self.model.train()
+			
+			train_loss = 0
+			counter=0
+			for image1, image2, annotation1, annotation2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
+
+
+				# image tensors and bounding box and label tensors to device
+				image1 = image1.to(self.device)
+				image2 = image2.to(self.device)
+
+
+
+				#print(self.model.weight.device)
+
+				x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
 				
-				train_loss = 0
-				counter=0
-				for image1, image2, annotation1, annotation2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
+				loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
+				train_loss+=loss
 
-					# image tensors and bounding box and label tensors to device
-					image1 = image1.to(self.device)
-					image2 = image2.to(self.device)
+				# Clear optimizer gradient
+				self.optimizer.zero_grad()
+				# Backprop
+				loss.backward()
+				# Take a step 
+				self.optimizer.step()
+				
+				if counter%10==0:
+					self.save_checkpoint(self.model, self.optimizer, self.model_name, epoch, train_loss)
 
+			print(f'====> Epoch: {epoch} Average train loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
 
-
-					#print(self.model.weight.device)
-
-					x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
-					
-
-					loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
-					train_loss+=loss
-
-					# Clear optimizer gradient
-					self.optimizer.zero_grad()
-					# Backprop
-					loss.backward()
-					# Take a step 
-					self.optimizer.step()
-					
-					if counter%10==0:
-						self.save_checkpoint(self.model, self.optimizer, self.model_name, epoch, train_loss)
-
-				print(f'====> Epoch: {epoch} Average loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
+			if self.local==True:
+				torch.save(self.model, os.path.join(self.save_path, self.model_name+".pt"))
+			else:
+				torch.save(self.model, self.model_name+"_epoch"+str(epoch)+".pt")
+				print("SAVED MODEL EPOCH " +str(epoch))
 
 			# with torch.no_grad():
 			# 	self.model.eval()
-			# 	for image, annotation in tqdm(self.train_loader, desc= "Validation Epoch "+str(epoch)):
-			# 		test_loss = 0
+			# 	for image1, image2, annotation1, annotation2 in tqdm(self.val_loader, desc= "Validation Epoch "+str(epoch)):
+			# 		val_loss = 0
 
 			# 		#image = [im.to(self.device) for im in image]
-			# 		image = [im.cuda() for im in image]
+			# 		#image = [im.cuda() for im in image]
 			# 		#annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
-			# 		annotation = [{k: v.cuda() for k, v in t.items()} for t in annotation]
+			# 		#annotation = [{k: v.cuda() for k, v in t.items()} for t in annotation]
 
-			# 		output = self.model(image)
-			print("[DONE EPOCH{}".format(epoch))
+			# 		image1 = image1.to(self.device)
+			# 		image2 = image2.to(self.device)
 
-		print("[DONE]")
+			# 		x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
+					
+			# 		loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
+			# 		val_loss+=loss
+			# 	print(f'====> Epoch: {epoch} Average test loss: {val_loss / len(self.val_loader.dataset):.4f}\n')
+
+			print("[DONE EPOCH{}]".format(epoch))
+
+		print("[DONE TRAINING]")
 
 		if self.local==True:
 			torch.save(self.model, os.path.join(self.save_path, self.model_name+".pt"))
