@@ -87,6 +87,7 @@ class GeoMatch:
 			results.append(matched_boxes)
 
 		if len(results)==len(self.train_loader):
+			print(results)
 			print("DONE")
 		else:
 			print(len(results), len(self.train_loader))
