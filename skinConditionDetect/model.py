@@ -208,16 +208,17 @@ class IANet(nn.Module):
 		self.encoder1 = Encoder()
 		self.encoder2 = Encoder()
 
-	def forward(self, x):
-		z1, idx1, dim1 = self.encoder1(x[0])
-		z2, idx2, dim2 = self.encoder1(x[0])
+	def forward(self, x1, x2):
+		z1, idx1, dim1 = self.encoder1(x1)
+		z2, idx2, dim2 = self.encoder1(x2)
 		decoder1 = Decoder(idx1, dim1)
 		decoder2 = Decoder(idx2, dim2)
 
 		x1 = decoder1(z1)
 		x2 = decoder2(z2)
-
 		return x1, x2, z1, z2
+
+		
 
 
 

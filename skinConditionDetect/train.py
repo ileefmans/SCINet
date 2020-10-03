@@ -53,16 +53,19 @@ class Trainer:
 	def __init__(self):
 
 		self.ops = get_args()
-		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
+		#self.device = torch.device("cuda")#("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
 		self.model_version = self.ops.model_version
 		
 		# Import model
-		if self.model_version==1:
-			self.model = IANet().to(self.device) 
-			self.model_name = "IANet"
-		else:
+		#if self.model_version==1:
+		self.model = IANet().cuda()
+		
+
+		self.model_name = "IANet"
+
+		#else:
 			# ENTER OTHER MODEL INITIALIZATIONS HERE
-			pass
+			#pass
 
 		# Set local or remote paths
 		self.local = self.ops.local
@@ -137,22 +140,22 @@ class Trainer:
 			# TRAIN
 			if epoch>0:
 				self.model.train()
+				
 				train_loss = 0
 				counter=0
 				for image1, image2, annotation1, annotation2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
 
 					# image tensors and bounding box and label tensors to device
-					image1 = image1.to(self.device) 
-					image2 = image2.to(self.device)
+					image1 = image1.cuda() 
+					image2 = image2.cuda()
 
 
 
 
 
-					x1_hat, x2_hat, z1, z2 = self.model((image1, image2))
-
-
+					x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
+					
 
 					loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
 					train_loss+=loss
