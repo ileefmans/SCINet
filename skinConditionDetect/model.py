@@ -60,8 +60,8 @@ class STN(nn.Module):
 		theta = self.fc_loc(xs)
 		theta = theta.view(-1, 2, 3)
 		# Grid Generator
-		grid = F.affine_grid(theta, x.size())
-		x = F.grid_sample(x, grid)
+		grid = F.affine_grid(theta, x.size(), align_corners=True)
+		x = F.grid_sample(x, grid, align_corners=True)
 
 		return x
 
@@ -71,7 +71,7 @@ class ConvLayer(nn.Module):
 	"""
 		Convolutional layer consisting of a 2d convolution, (optionally 2d dropout), max pooling and a ReLU 
 	"""
-	def __init__(self, in_channels, out_channels, kernel_size=5, dropout=False):
+	def __init__(self, in_channels, out_channels, kernel_size=5, dropout=False, final_layer=False):
 		"""
 			Args:
 
@@ -93,9 +93,11 @@ class ConvLayer(nn.Module):
 		self.conv = nn.Conv2d(self.in_channels, self.out_channels, kernel_size=self.kernel_size)
 		self.pool = nn.MaxPool2d(kernel_size=2, return_indices=True)
 		self.relu = nn.ReLU()
+		self.sigmoid = nn.Sigmoid()
 
 		self.dropout = dropout
 		self.drop = nn.Dropout2d()
+		self.final_layer=final_layer
 
 	def forward(self, x):
 		x = self.conv(x)
@@ -103,7 +105,10 @@ class ConvLayer(nn.Module):
 			x = self.drop(x)
 		pre_pool_dim = x.size()
 		x, idx = self.pool(x)
-		x = self.relu(x)
+		if self.final_layer ==False:
+			x = self.relu(x)
+		else:
+			x = self.sigmoid(x)
 
 		return x, idx, pre_pool_dim
 
@@ -112,7 +117,7 @@ class DeConvLayer(nn.Module):
 	"""
 		De-convolutional layer consisting of a 2d de-convolution, (optionally 2d dropout), max unpooling and a ReLU 
 	"""
-	def __init__(self, pool_index, pre_pool_dims, in_channels, out_channels, kernel_size=5, dropout=False):
+	def __init__(self, pool_index, pre_pool_dims, in_channels, out_channels, kernel_size=5, dropout=False, final_layer=False):
 		"""
 			Args:
 
@@ -139,16 +144,22 @@ class DeConvLayer(nn.Module):
 		self.convT = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=5)
 		self.unpool = nn.MaxUnpool2d(kernel_size=2)
 		self.relu = nn.ReLU()
+		self.sigmoid = nn.Sigmoid()
 
 		self.dropout = dropout
 		self.drop = nn.Dropout2d()
+		self.final_layer = final_layer
 
 	def forward(self, x):
 		x = self.unpool(x, self.pool_index, self.pre_pool_dims)
 		if self.dropout==True:
 			x = self.drop(x)
 		x = self.convT(x)
-		x = self.relu(x)
+		if self.final_layer==False:
+			x = self.relu(x)
+		else:
+			x = self.sigmoid(x)
+
 
 		return x
 		
@@ -161,7 +172,7 @@ class Encoder(nn.Module):
 	def __init__(self):
 		super(Encoder, self).__init__()
 		self.conv1 = ConvLayer(3, 10, kernel_size=5, dropout=True)
-		self.conv2 = ConvLayer(10, 20, kernel_size=5, dropout=False)
+		self.conv2 = ConvLayer(10, 20, kernel_size=5, dropout=False, final_layer=True)
 		
 	def forward(self, x):
 		stn = STN(x.size())
@@ -188,7 +199,7 @@ class Decoder(nn.Module):
 		self.dimension_list = dimension_list
 
 		self.convT1 = DeConvLayer(self.index_list[1], self.dimension_list[1], 20, 10, kernel_size=5, dropout=False)
-		self.convT2 = DeConvLayer(self.index_list[0], self.dimension_list[0], 10, 3, kernel_size=5, dropout=True)
+		self.convT2 = DeConvLayer(self.index_list[0], self.dimension_list[0], 10, 3, kernel_size=5, dropout=True, final_layer=True)
 
 	def forward(self, x):
 		stn = STN(x.size())
