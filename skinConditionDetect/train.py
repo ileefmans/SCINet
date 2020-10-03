@@ -53,12 +53,12 @@ class Trainer:
 	def __init__(self):
 
 		self.ops = get_args()
-		#self.device = torch.device("cuda")#("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
+		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
 		self.model_version = self.ops.model_version
 		
 		# Import model
 		#if self.model_version==1:
-		self.model = IANet().cuda()
+		self.model = IANet().to(self.device)
 		
 
 		self.model_name = "IANet"
@@ -124,6 +124,9 @@ class Trainer:
 		# TRAINING
 
 	def train(self):
+		if self.local==False:
+			torch.set_default_tensor_type(torch.cuda.FloatTensor)
+			print("\n \n EVERYTHING TO CUDA \n \n")
 		# Load weights if applicable
 		if self.load_weights == True:
 			start_epoch, loss = self.load_checkpoint(self.model, self.optimizer, self.model_name)
@@ -147,12 +150,12 @@ class Trainer:
 
 
 					# image tensors and bounding box and label tensors to device
-					image1 = image1.cuda() 
-					image2 = image2.cuda()
+					image1 = image1.to(self.device)
+					image2 = image2.to(self.device)
 
 
 
-
+					#print(self.model.weight.device)
 
 					x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
 					
