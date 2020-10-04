@@ -3,6 +3,25 @@ from PIL import Image
 from time import sleep
 from facealign import FaceAlign, CalculateMatches
 import pandas as pd
+import torch
+
+
+
+def destring(list_string):
+		"""
+			Function for converting a list of strings containing bounding box coordinates to tensors
+
+			Args:
+
+				list_string (list): List of strings to be converted
+		"""
+		out = []
+		for i in list_string:
+			x = i.split(',')
+			x = [float(j) for j in x]
+			out.append(x)
+		out = torch.tensor(out) 
+		return out 
 
 
 
@@ -15,27 +34,26 @@ def annotation_conversion(total_annotation):
 			annotation (list): list of dictionaries containing all annotation infromation
 	"""
 	annotation = {}
+	label_dict = {"pimple-region":1, "come-region":2, 
+						   "darkspot-region":3, "ascar-region":4, "oscar-region":5, 
+						   "darkcircle":6}
 
 	count = 0
 	for i in total_annotation['annotation']:
-		try:
+		
 			
-			if (i['condition']=='Detected') and ('bounding_boxes' in i.keys()):
-				
-				box = self.destring(i['bounding_boxes'])
+		if (i['condition']=='Detected') and ('bounding_boxes' in i.keys()):
+			
+			box = destring(i['bounding_boxes'])
 
-				label = torch.ones([box.size(0)], dtype=torch.int64)*self.label_dict[i['label']]
-				if count == 0:
-					boxes = box
-					labels = label
-				else:
-					boxes = torch.cat((boxes, box), 0) 
-					labels = torch.cat((labels, label), 0)
-				count+=1
-		except:
-			pass
-		finally:
-			pass
+			label = torch.ones([box.size(0)], dtype=torch.int64)*label_dict[i['label']]
+			if count == 0:
+				boxes = box
+				labels = label
+			else:
+				boxes = torch.cat((boxes, box), 0) 
+				labels = torch.cat((labels, label), 0)
+			count+=1
 		
 	annotation['boxes'] = boxes
 	annotation['labels'] = labels
