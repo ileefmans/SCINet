@@ -4,6 +4,8 @@ from time import sleep
 from facealign import FaceAlign, CalculateMatches
 import pandas as pd
 import torch
+import cv2
+import numpy as np 
 
 
 
@@ -73,13 +75,14 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 
 
 st.title('**SCINet**')
-st.markdown(""" #### SCINet uses Artificial Intelligence to identify persisting skin conditions.   
-	Follow the directions in the side bar and see your results below.""")
+st.markdown(""" #### SCINet uses Artificial Intelligence to identify persisting skin conditions. """)
+st.text("")
+st.text("")
 
 st.sidebar.markdown("### Insert images and annotations below:")
-st.sidebar.markdown("- **Image 1:** Earlier image")
-st.sidebar.markdown("- **Image 2:** Current image ")
-st.sidebar.markdown("- **Annotation:** Json file")
+#st.sidebar.markdown("- **Image 1:** Earlier image")
+#st.sidebar.markdown("- **Image 2:** Current image ")
+#st.sidebar.markdown("- **Annotation:** Json file")
 
 
 placeholder = st.empty()
@@ -89,35 +92,81 @@ image1 = st.sidebar.file_uploader("Image 1 [.jpg]", type="jpg")
 
 image2 = st.sidebar.file_uploader("Image 2 [.jpg]", type="jpg")
 
-annotation = st.sidebar.file_uploader("Annotation 1 [.json]", type="json")
-row_num1 = st.sidebar.number_input("Row 1 in annotation") #[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
-row_num2 = st.sidebar.number_input("Row 2 in annotation")
+annotation = st.sidebar.file_uploader("Annotation [.json]", type="json")
+#row_num1 = st.sidebar.number_input("Row 1 in annotation") #[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+#row_num2 = st.sidebar.number_input("Row 2 in annotation")
 
 
 
 
-if (st.sidebar.button("Run")) and (image1 is not None) and (image2 is not None) and (annotation is not None) and (row_num1 is not None):
-	with st.spinner('Wait for it...'):
+if (st.sidebar.button("Run")) and (image1 is not None) and (image2 is not None) and (annotation is not None): #and (row_num1 is not None):
+	
+	# Read and resize images
+	image1 = Image.open(image1)
+	image2 = Image.open(image2)
 
+	image1 = np.array(image1) 
+	image2 = np.array(image2) 
+			
+	image10 = cv2.resize(image1, (100,175))
+	image20 = cv2.resize(image2, (100,175))
+
+	# Draws bounding boxes
+	cv2.rectangle(image10,(15,118),(15+20,118+20),(255,0,0),1)
+	cv2.rectangle(image10,(30,145),(30+12,145+12),(255,0,0),1)
+	cv2.rectangle(image10,(61,120),(61+17,120+33),(255,0,0),1)
+	cv2.rectangle(image20,(23,125),(23+15,125+15),(255,0,0),1)
+	cv2.rectangle(image20,(63,143),(65+14,145+15),(255,0,0),1)
+
+	# enlarge image
+	image10 = cv2.resize(image10, (round(100*1.5), round(175*1.5)))
+	image20 = cv2.resize(image20, (round(100*1.5), round(175*1.5)))
+
+	
+
+	# Read in json and select rows
+	df = pd.read_json(annotation)
+	#total_annotation1 = df.iloc[int(row_num1)].image_details
+	#total_annotation2 = df.iloc[int(row_num2)].image_details
+
+	# Extract bounding boxes
+	#annotation1 = annotation_conversion(total_annotation1)
+	#annotation2 = annotation_conversion(total_annotation2)
+
+	# Display annotated images
+	placeholder.image([image10, image20])
+
+	placeholder2 = st.empty()
+
+	placeholder2.markdown("""**All identified conditions:**   
+		- Image 1: {bbox1: acne, bbox2: acne, bbox3: acne}  
+		- Image 2: {bbox1: acne, bbox2: darkspots} """)
+
+	with st.spinner('Determining Persistent conditions...'):
 		sleep(5)
-		image1 = Image.open(image1)
-		image2 = Image.open(image2)
-		df = pd.read_json(annotation)
-		total_annotation1 = df.iloc[int(row_num1)].image_details
-		total_annotation2 = df.iloc[int(row_num2)].image_details
-
-		
-		annotation1 = annotation_conversion(total_annotation1)
-		annotation2 = annotation_conversion(total_annotation2)
 
 
-		#type1 = str(type(image1))
+		image11 = cv2.resize(image1, (100,175))
+		image21 = cv2.resize(image2, (100,175))
 
-		placeholder.image([image1, image2])
+		cv2.rectangle(image11,(15,118),(15+20,118+20),(0,255,0),1)
+		#cv2.rectangle(image10,(30,145),(30+12,145+12),(255,0,0),1)
+		#cv2.rectangle(image10,(61,120),(61+17,120+33),(255,0,0),1)
+		cv2.rectangle(image21,(23,125),(23+15,125+15),(0,255,0),1)
+		#cv2.rectangle(image20,(63,143),(65+14,145+15),(255,0,0),1)
 
-		st.markdown(str(annotation1))
 
-		st.balloons()
+		# enlarge image
+		image11 = cv2.resize(image11, (round(100*1.5), round(175*1.5)))
+		image21 = cv2.resize(image21, (round(100*1.5), round(175*1.5)))
+
+		placeholder.image([image11, image21])
+		placeholder2.markdown("""**Persistent Conditions:**    
+			- Image 1: {bbox1: acne}  
+			- Image 2: {bbox1: acne}""")
+
+
+	st.balloons()
 
 
 
