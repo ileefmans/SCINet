@@ -168,7 +168,7 @@ class Trainer:
 				
 
 				loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
-				train_loss+=loss
+				train_loss+=loss.item()
 
 				# Clear optimizer gradient
 				self.optimizer.zero_grad()
