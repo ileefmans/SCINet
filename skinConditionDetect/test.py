@@ -9,12 +9,14 @@ from model import IANet
 import argparse
 from tqdm import tqdm
 import boto3
+from PIL import Image
 
 
 
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
 	parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
+	parser.add_argument("--model_path", type=str, default="SCINet.pt", help="Path to saved model")
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
 	parser.add_argument("--local_test_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_test_dict.pkl", help="path to local val pickled annotation path dictionary")
 	parser.add_argument("--remote_test_pickle_path", type=str, default="simple_test_dict.pkl")
@@ -43,6 +45,10 @@ class Test:
 	def __init__(self):
 
 		self.ops = get_args()
+		self.model_path = self.ops.model_path
+		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+		self.model = torch.load(self.model_path)
+		self.model = self.model.to(self.device)
 		self.local = self.ops.local
 		self.access_key = self.ops.access_key
 		self.secret_access_key = self.ops.secret_access_key
@@ -74,7 +80,45 @@ class Test:
 			self.test_loader = DataLoader(dataset=self.testset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate2)
 
 
-		
+		def calculate_metric(self):
+			pass
+
+		def evaluate(self):
+
+			if self.local==False:
+				torch.set_default_tensor_type(torch.cuda.FloatTensor)
+				print("\n \n EVERYTHING TO CUDA \n \n")
+
+			# Load weights if applicable
+			if self.load_weights == True:
+				start_epoch, loss = self.load_checkpoint(self.model, self.optimizer, self.model_name)
+				print("\n \n [WEIGHTS LOADED]")
+
+			with torch.no_grad():
+				self.model.eval()
+
+				for image1, image2, annotation1, annotation2 in tqdm(self.val_loader, desc= "Validation Epoch "+str(epoch)):
+
+					# Get dimensions of both images
+					width1 = image1.size(-1)
+					height1 = image1.size(-2)
+					width2 = image2.size(-1)
+					height2 = image2.size(-2)
+
+					# Loop through each bounding box for image 1
+					for i in range(len(annotation1[0]['boxes'].size(0))):
+						box1_im = Image.new('RGB', (width1, height1))
+						
+
+						box = annotation1[0]['boxes'][i,:]
+						x = int
+
+					# Loop through each bounding box for image 2
+					for i in range(len(annotation2[0]['boxes'].size(0))):
+
+
+
+
 
 
 
