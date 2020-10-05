@@ -55,7 +55,7 @@ class FaceAlign:
             label = int(sample['labels'][i])
             box_image = Image.new('RGB', (width, height))
             box_image = cv2.cvtColor(np.array(box_image), cv2.COLOR_RGB2BGR)
-            cv2.rectangle(box_image,(x,y),(x+w,y+h),(0,255,0),-1)
+            cv2.rectangle(box_image,(x,y),(w,h),(0,255,0),-1)
             output.append((box_image, label))
         return output
 
