@@ -4,6 +4,8 @@ import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+from datahelper2 import CreateDataset, my_collate, my_collate2
+from preprocess import Image_Process
 import torchvision
 from model import IANet
 import argparse
@@ -83,6 +85,46 @@ class Test:
 		def calculate_metric(self):
 			pass
 
+		def process_for_inference(self, box, witdth, height):
+			# Create blank image size of picture
+			box_im = Image.new('RGB', (width, height))
+			box_im = cv2.cvtColor(np.array(box1_im), cv2.COLOR_RGB2BGR)
+
+			# Get dimensions for bboxes
+			x1 = int(box[0])
+			y1 = int(box[1])
+			x2 = int(box[2])
+			y2 = int(box[3])
+
+			# Draw bounding boxes
+			cv2.rectangle(box_im,(x1,y1),(x2,y2),(0,255,0),-1) 
+
+			# Transform to PIL Image for preprocessing before entering SCINet
+			box_im = cv2.cvtColor(box_im, cv2.COLOR_BGR2RBG)
+			box_im = Image.fromarray(box_im)
+			box_im = box_im.convert('RGB')
+
+			# Preprocess
+			image_process = Image_Process((256,256))
+			box_im = image_process.expand(box_im)
+			transform = torchvision.transforms.ToTensor()
+			box_im = transform(box_im)
+			box_im = image_process.uniform_size(box_im)
+
+			return box_im
+
+
+		def IoU(self, input1, input2):
+			union = np.count_nonzero(input1 + input2)
+			total  = np.count_nonzero(input1) + np.count_nonzero(input2)
+			intersection = total-union
+			IoU = intersection/union
+
+			return IoU
+
+
+
+
 		def evaluate(self):
 
 			if self.local==False:
@@ -105,16 +147,64 @@ class Test:
 					width2 = image2.size(-1)
 					height2 = image2.size(-2)
 
+					# Number of boxes for each image
+					num_boxes1 = len(annotation1[0]['boxes'].size(0))
+					num_boxes2 = len(annotation2[0]['boxes'].size(0))
+
+
+					# Blank lists where output tensors will go for each image's bounding boxes
+					output_im1 = []
+					output_im2 = []
+
 					# Loop through each bounding box for image 1
-					for i in range(len(annotation1[0]['boxes'].size(0))):
-						box1_im = Image.new('RGB', (width1, height1))
+					for i in range(max(num_boxes1, num_boxes2)):
 						
+						# Get bounding boxes
+						try:
+							box1 = annotation1[0]['boxes'][i,:]
+						except:
+							# if out of range for image with less boxes, fill in blank box to feed to other branch of SCINet
+							box1 = [0, 0, 0, 0]
+						finally:
+							pass
+						try:
+							box2 = annotation2[0]['boxes'][i,:]
+						except:
+							# if out of range for image with less boxes, fill in blank box to feed to other branch of SCINet
+							box2 = [0, 0, 0, 0]
+						finally:
+							pass
 
-						box = annotation1[0]['boxes'][i,:]
-						x = int
+						# process for inference with SCINet
+						box1_im = self.process_for_inference(box1, width1, height1)
+						box2_im = self.process_for_inference(box2, width2, height2)
 
-					# Loop through each bounding box for image 2
-					for i in range(len(annotation2[0]['boxes'].size(0))):
+						# Feed to SCINet
+						box1_im = box1_im.to(self.device)
+						box2_im = box2_im.to(self.device)
+
+						x1_hat, x2_hat, z1, z2 = self.model(box1_im, box2_im)
+
+						# Append applicable results to list 
+						if i<num_boxes1:
+							output_im1.append(x1_hat)
+						if i<num_boxes2:
+							output_im2.append(x2_hat)
+					
+					matched = []
+					for i in range(len(output_im1)):
+						for j in range(len(output_im2)):
+							if annotation1[0]['labels'][i] == annotation2[0]['labels'][j]:
+								IoU = self.IoU(output_im1, output_im2)
+								
+
+
+
+        					
+
+
+
+
 
 
 
