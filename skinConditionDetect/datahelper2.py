@@ -180,6 +180,20 @@ class CreateDataset(torch.utils.data.Dataset):
 
 		return annotation
 
+
+	def get_landmarks(self, total_annotation):
+	    landmarks = ["RIGHT_EYE_RIGHT_CORNER", "LEFT_EYE_LEFT_CORNER", "NOSE_BOTTOM_CENTER", "MOUTH_LEFT", "MOUTH_RIGHT"]
+	    anchor_list = []
+	    for i in range(len(landmarks)):
+	        anchors = total_annotation['landmarks'][landmakrs[i]]
+	        x = anchors['x']
+	        y = anchors['y']
+	        
+	        anchor = (x,y)
+	        anchor_list.append(anchor)
+	    
+	    return anchor_list
+
 	
 
 	def __len__(self):
@@ -209,6 +223,8 @@ class CreateDataset(torch.utils.data.Dataset):
 		total_annotation2 = annotation_df2.iloc[self.annotation_dict[index][1][1]].image_details
 		annotation1 = self.annotation_conversion(total_annotation1)
 		annotation2 = self.annotation_conversion(total_annotation2)
+		landmark1 = self.get_landmarks(total_annotation1)
+		landmark2 = self.get_landmarks(total_annotation2)
 
 
 		
@@ -255,7 +271,7 @@ class CreateDataset(torch.utils.data.Dataset):
 
 
 
-		return image1, image2, annotation1, annotation2
+		return image1, image2, annotation1, annotation2, landmark1, landmark2
 
 
 
