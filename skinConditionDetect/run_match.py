@@ -57,17 +57,38 @@ class GeoMatch:
 		self.trainset = CreateDataset(self.pickle_path, self.data_directory, local=self.local, geometric=self.geometric, access_key=self.access_key, secret_access_key=self.secret_access_key, transform=self.transform)
 		self.train_loader = DataLoader(dataset=self.trainset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
 
+
+	def euclidean_distance(self, x1, y1, x2, y2):
+		return ((x1-x2)**2 + (y1-y2)**2)**(1/2)
+
+
+	def confidence(self, landmarks1, landmarks2, box1, box2):
+		total_distance = 0
+		for i in range(len(landmarks1)):
+			distance1 = self.euclidean_distance(box1[0], box1[1], landmarks1[i][0], landmarks1[i][1])
+			distance2 = self.euclidean_distance(box1[0], box1[1], landmarks1[i][0], landmarks1[i][1])
+			total_distance+=abs(distance1-distance2)
+		avg_distance = total_distance/((256**2 +256**2)**(1/2))
+		confidence = 1 -  avg_distance
+		return confidence
+
+
+
+
+
 	def run(self):
 		results =[]
 		for sample in tqdm(self.train_loader):
 			sample1 = (sample[0], sample[2])
 			sample2 = (sample[1], sample[3])
+			landmarks1 = sample[4]
+			landmarks2 = sample[5]
 
 			fa1 = FaceAlign(sample1, self.predictor)
 			fa2 = FaceAlign(sample2, self.predictor)
 
-			image1, boxes1 = fa1.forward()
-			image2, boxes2 = fa2.forward()
+			image1, boxes1, box_list1 = fa1.forward()
+			image2, boxes2, box_list2 = fa2.forward()
 
 			box1_list = []
 			matched_boxes = {}
@@ -76,13 +97,15 @@ class GeoMatch:
 					ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
 					IoU = ca.evaluate()
 					if IoU>0:
-						if i in box1_list:
-							if IoU > matched_boxes[i][0]:
-								matched_boxes[i] = (IoU, j)
-						else:
-							matched_boxes[i] = (IoU, j)
-							box1_list.append(i)
+						confidence = self.confidence(landmarks1[0], landmarks2[0], box_list1[i], box_list2[j])
 
+						metric = 0.5*IoU + 0.5*confidence
+						if i in box1_list:
+							if metric> matched_boxes[i][0]:
+								matched_boxes[i] = (metric, j)
+						else:
+							matched_boxes[i] = (metric, j)
+							box1_list.append(i)
 
 			results.append(matched_boxes)
 

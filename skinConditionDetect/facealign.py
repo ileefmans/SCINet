@@ -48,6 +48,7 @@ class FaceAlign:
     def annotation_extract(self, sample, height, width):
         sample = sample[1][0]
         output = []
+        box_list = []
         for i in range(sample['boxes'].size(0)):
             x = int(sample['boxes'][i,:][0])
             y = int(sample['boxes'][i,:][1])
@@ -58,19 +59,20 @@ class FaceAlign:
             box_image = cv2.cvtColor(np.array(box_image), cv2.COLOR_RGB2BGR)
             cv2.rectangle(box_image,(x,y),(w,h),(0,255,0),-1)
             output.append((box_image, label))
-        return output
+            box_list.append((x,y,w,h))
+        return output, box_list
 
 
     def forward(self):
         facebox = self.facebox(self.image)
         aligned_face = self.face_align.align(self.image, self.gray, facebox)
-        box_ims = self.annotation_extract(self.sample, self.height, self.width)
+        box_ims, box_list = self.annotation_extract(self.sample, self.height, self.width)
         aligned_boxes = []
         for im in box_ims:
             aligned_box = self.face_align.align(im[0], self.gray, facebox)
             aligned_boxes.append((aligned_box, im[1]))
 
-        return aligned_face, aligned_boxes
+        return aligned_face, aligned_boxes, box_list
 
 
 
