@@ -18,15 +18,15 @@ Identify facial skin conditions which are persistent over time. Given two facial
 SCINet leverages opencv's pretrained facial detection model to align the faces and then match corresponding skin conditions
   
   
-  ## Getting Started  
+  # Getting Started  
   Follow the instructions below to get clone the repo and leverage the model.
-  ### Installation  
-  Clone the repository:  
+  ## Usage  
+  1. Clone the repository:  
   ```shell script
   git clone https://github.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions
   cd Re-Identifying_Persistent_Skin_Conditions
   ```  
-  Install dependencies using [requirements.txt](./requirements.txt):
+  2. Install dependencies using [requirements.txt](./requirements.txt):
   ```shell script
   pip install -r requirements.txt
   ```  
@@ -34,5 +34,7 @@ SCINet leverages opencv's pretrained facial detection model to align the faces a
   ```shell script 
   pip3 install -r requirements.txt
   ```
+  3. Demo: 🏃🏿‍♀️🏃🏿🏃🏾‍♀️🏃🏾🏃🏽‍♀️🏃🏽🏃🏻‍♀️🏃🏻🏃🏼‍♀️🏃🏼 
+  
   
   
