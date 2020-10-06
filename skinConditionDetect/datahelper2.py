@@ -18,7 +18,9 @@ def my_collate(batch):
     image1 = [item[1] for item in batch]
     annotation0 = [item[2] for item in batch]
     annotation1 = [item[3] for item in batch]
-    return image0, image1, annotation0, annotation1
+    landmark0 = [item[4] for item in batch]
+    landmark1 = [item[5] for item in batch]
+    return image0, image1, annotation0, annotation1, landmark0, landmark1
 
 def my_collate2(batch):
     image0 = [item[0] for item in batch]
@@ -27,7 +29,10 @@ def my_collate2(batch):
     image1 = torch.stack(image1)
     annotation0 = [item[2] for item in batch]
     annotation1 = [item[3] for item in batch]
-    return image0, image1, annotation0, annotation1
+    landmark0 = [item[4] for item in batch]
+    landmark1 = [item[5] for item in batch]
+
+    return image0, image1, annotation0, annotation1, landmark0, landmark1
 
 
 # Define class for creating and uploaded pickled annotation dictionary
@@ -185,7 +190,7 @@ class CreateDataset(torch.utils.data.Dataset):
 	    landmarks = ["RIGHT_EYE_RIGHT_CORNER", "LEFT_EYE_LEFT_CORNER", "NOSE_BOTTOM_CENTER", "MOUTH_LEFT", "MOUTH_RIGHT"]
 	    anchor_list = []
 	    for i in range(len(landmarks)):
-	        anchors = total_annotation['landmarks'][landmakrs[i]]
+	        anchors = total_annotation['landmarks'][landmarks[i]]
 	        x = anchors['x']
 	        y = anchors['y']
 	        
