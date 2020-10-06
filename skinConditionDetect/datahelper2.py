@@ -237,7 +237,7 @@ class CreateDataset(torch.utils.data.Dataset):
 			if self.geometric==True:
 				image1 = cv2.imread(os.path.join(self.data_dir, 'images', image_path1))
 				image2 = cv2.imread(os.path.join(self.data_dir, 'images', image_path2))
-				return image1, image2, annotation1, annotation2
+				return image1, image2, annotation1, annotation2, landmark1, landmark2
 			else:
 				image1 =  Image.open(os.path.join(self.data_dir, 'images', image_path1))
 				image2 =  Image.open(os.path.join(self.data_dir, 'images', image_path2))
