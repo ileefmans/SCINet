@@ -31,7 +31,7 @@ SCINet leverages opencv's pretrained facial detection model to align the faces a
   pip install -r requirements.txt
   ```  
   or 
-  ``shell script 
+  ```shell script 
   pip3 install -r requirements.txt
   ```
   
