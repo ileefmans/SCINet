@@ -153,7 +153,7 @@ class Trainer:
 			
 			train_loss = 0
 			counter=0
-			for image1, image2, annotation1, annotation2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
+			for image1, image2, annotation1, annotation2, landmark1, landmark2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
 
 				# image tensors and bounding box and label tensors to device

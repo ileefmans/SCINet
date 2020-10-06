@@ -12,15 +12,17 @@ import argparse
 from tqdm import tqdm
 import boto3
 from PIL import Image
+import cv2
+
 
 
 
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
 	parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
-	parser.add_argument("--model_path", type=str, default="SCINet.pt", help="Path to saved model")
+	parser.add_argument("--model_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data/model_checkpoints/SCINet_epoch1.pt", help="Path to saved model")
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
-	parser.add_argument("--local_test_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_test_dict.pkl", help="path to local val pickled annotation path dictionary")
+	parser.add_argument("--local_test_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local val pickled annotation path dictionary")
 	parser.add_argument("--remote_test_pickle_path", type=str, default="simple_test_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
@@ -49,7 +51,7 @@ class Test:
 		self.ops = get_args()
 		self.model_path = self.ops.model_path
 		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-		self.model = torch.load(self.model_path)
+		self.model = torch.load(self.model_path, map_location=torch.device('cpu'))
 		self.model = self.model.to(self.device)
 		self.local = self.ops.local
 		self.access_key = self.ops.access_key
@@ -74,7 +76,7 @@ class Test:
 
 
 		# Instantiate Dataloader
-		self.testset = CreateDataset(self.pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, geometric=self.geometric, transform=self.transform)
+		self.testset = CreateDataset(self.test_pickle_path, self.data_directory, img_size=self.img_size, local=self.local, access_key=self.access_key, secret_access_key=self.secret_access_key, geometric=self.geometric, transform=self.transform)
 
 		if self.geometric==True:
 			self.test_loader = DataLoader(dataset=self.testset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
@@ -85,10 +87,10 @@ class Test:
 	def calculate_metric(self):
 		pass
 
-	def process_for_inference(self, box, witdth, height):
+	def process_for_inference(self, box, width, height):
 		# Create blank image size of picture
 		box_im = Image.new('RGB', (width, height))
-		box_im = cv2.cvtColor(np.array(box1_im), cv2.COLOR_RGB2BGR)
+		box_im = cv2.cvtColor(np.array(box_im), cv2.COLOR_RGB2BGR)
 
 		# Get dimensions for bboxes
 		x1 = int(box[0])
@@ -97,10 +99,11 @@ class Test:
 		y2 = int(box[3])
 
 		# Draw bounding boxes
+
 		cv2.rectangle(box_im,(x1,y1),(x2,y2),(0,255,0),-1) 
 
 		# Transform to PIL Image for preprocessing before entering SCINet
-		box_im = cv2.cvtColor(box_im, cv2.COLOR_BGR2RBG)
+		#box_im = cv2.cvtColor(box_im, cv2.COLOR_BGR2RBG)
 		box_im = Image.fromarray(box_im)
 		box_im = box_im.convert('RGB')
 
@@ -115,10 +118,12 @@ class Test:
 
 
 	def IoU(self, input1, input2):
-		union = np.count_nonzero(input1 + input2)
-		total  = np.count_nonzero(input1) + np.count_nonzero(input2)
+		union = np.count_nonzero(np.array(input1) + np.array(input2))
+		total  = np.count_nonzero(np.array(input1)) + np.count_nonzero(np.array(input2))
 		intersection = total-union
 		IoU = intersection/union
+
+		print(union, intersection)
 
 		return IoU
 
@@ -140,7 +145,7 @@ class Test:
 			self.model.eval()
 
 			results = []
-			for image1, image2, annotation1, annotation2 in tqdm(self.val_loader, desc= "Validation Epoch "+str(epoch)):
+			for image1, image2, annotation1, annotation2, landmark1, landmark2 in tqdm(self.test_loader, desc= "Test "):
 
 				# Get dimensions of both images
 				width1 = image1.size(-1)
@@ -149,8 +154,8 @@ class Test:
 				height2 = image2.size(-2)
 
 				# Number of boxes for each image
-				num_boxes1 = len(annotation1[0]['boxes'].size(0))
-				num_boxes2 = len(annotation2[0]['boxes'].size(0))
+				num_boxes1 = annotation1[0]['boxes'].size(0)
+				num_boxes2 = annotation2[0]['boxes'].size(0)
 
 
 				# Blank lists where output tensors will go for each image's bounding boxes
@@ -181,6 +186,8 @@ class Test:
 					box2_im = self.process_for_inference(box2, width2, height2)
 
 					# Feed to SCINet
+					box1_im = box1_im.view(1, 3, 256, 256)
+					box2_im = box2_im.view(1, 3, 256, 256)
 					box1_im = box1_im.to(self.device)
 					box2_im = box2_im.to(self.device)
 
@@ -199,29 +206,44 @@ class Test:
 				for i in range(len(output_im1)):
 					for j in range(len(output_im2)):
 						if annotation1[0]['labels'][i] == annotation2[0]['labels'][j]:
-							IoU = self.IoU(output_im1, output_im2)
-							if IoU>0:
-								if i in box_list:
-									if IoU > matched_boxes[i][0]:
-										matched_boxes[i] = (IoU, j)
-									else:
-										matched_boxes[i] = (IoU, j)
-										box1_list.append(i)
+
+
+
+							#IoU = self.IoU(output_im1[i], output_im2[j])
+							CE = nn.functional.binary_cross_entropy(output_im1[i], output_im2[j], reduction='sum')
+							print(CE)
+							if i in box_list:
+								print(matched_boxes[i][0])
+								if CE < matched_boxes[i][0]:
+									matched_boxes[i] = (CE, j)
+								else:
+									matched_boxes[i] = (CE, j)
+									box1_list.append(i)
+
+
+
+							# if IoU>0:
+							# 	if i in box_list:
+							# 		if IoU > matched_boxes[i][0]:
+							# 			matched_boxes[i] = (IoU, j)
+							# 		else:
+							# 			matched_boxes[i] = (IoU, j)
+							# 			box1_list.append(i)
 
 				results.append(matched_boxes)
 
 
 
-		if len(results)==len(self.train_loader):
+		if len(results)==len(self.test_loader):
 			print(results)
 			print("DONE")
 		else:
-			print(len(results), len(self.train_loader))
+			print(len(results), len(self.test_loader))
 
 
 if __name__ == "__main__":
-	geomatch = Test()
-	geomatch.evaluate()
+	test = Test()
+	test.evaluate()
 
 
 
