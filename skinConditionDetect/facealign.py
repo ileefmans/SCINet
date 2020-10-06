@@ -38,6 +38,7 @@ class FaceAlign:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # convert to greyscale
         rects = self.detector(gray, 2) # returns a list of bounding boxes around face
         if len(rects) != 1:
+            print(len(rects))
             raise Exception("Input Error: detected more than one face in input image, expected one face")
         else:
             (x, y, w, h) = rect_to_bb(rects[0])
