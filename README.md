@@ -4,4 +4,4 @@
 Code for an API which identfies facial skin conditions which are persistent over time.
 
 
-<img src="https://github.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions/blob/master/images/Screen%20Shot%202020-10-06%20at%203.29.49%20PM.png" alt="drawing" width="200"/>
+[![Alt text](https://img.youtube.com/vi/VID/0.jpg)](https://www.youtube.com/watch?v=https://www.youtube.com/watch?v=fg9VBqtjan4)
