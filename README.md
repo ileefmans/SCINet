@@ -1,4 +1,5 @@
 # Re-Identifying Persistent Skin Conditions
+<img src="https://img.shields.io/badge/Insight-AI-lightgrey">
 [![Build Status](https://travis-ci.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions.svg?token=uqQex7VxKszGWbK9PpaD&branch=master)](https://travis-ci.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/Re-Identifying_Persistent_Skin_Conditions.svg)
