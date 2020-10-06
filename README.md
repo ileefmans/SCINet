@@ -16,4 +16,9 @@ Identify facial skin conditions which are persistent over time. Given two facial
 [<img src="https://github.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions/blob/master/images/Screen_Shot_2020-10-06.png" width=300 align=center>](https://www.youtube.com/watch?v=fg9VBqtjan4)  
   
   
-  ### Getting Started
+  ## Getting Started  
+  ### Installation  
+  Clone the repository:  
+  ```shell script
+  git clone https://github.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions
+  ```
