@@ -10,7 +10,7 @@ torchvision
 requests
 tqdm
 boto3
-cv2
+opencv-python
 
 
 aniso8601==8.0.0
