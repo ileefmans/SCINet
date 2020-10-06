@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions.svg?token=uqQex7VxKszGWbK9PpaD&branch=master)](https://travis-ci.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
-![GitHub repo size](https://img.shields.io/github/repo-size/cleardusk/3DDFA_V2.svg)
+![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/Re-Identifying_Persistent_Skin_Conditions.svg)
 # Re-Identifying_Persistent_Skin_Conditions
 
 Identify facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, with conditions already detected, we can automate the process of identifying which conditions persist. 
