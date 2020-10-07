@@ -1,4 +1,4 @@
-# Re-Identifying Persistent Skin Conditions
+# SCINet
 
 
 ![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey)
@@ -8,7 +8,7 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
 
 
-Identify facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, with conditions already detected, we can automate the process of identifying which conditions persist. 
+SCINet identifies facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, with conditions already detected, we can automate the process of identifying which conditions persist. 
   
   The link to below leads to a quick demo providing a high-level intuition about what this module does.
 
@@ -23,8 +23,8 @@ SCINet leverages opencv's pretrained facial detection model to align the faces a
   ## Usage  
   1. Clone the repository:  
   ```shell script
-  git clone https://github.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions
-  cd Re-Identifying_Persistent_Skin_Conditions
+  git clone https://github.com/ileefmans/SCINet
+  cd SCINet
   ```  
   2. Install dependencies using [requirements.txt](./requirements.txt):
   ```shell script
