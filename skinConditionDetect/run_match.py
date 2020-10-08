@@ -12,7 +12,7 @@ def get_args():
 	#parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
 	#parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
 	parser.add_argument("--local", type=bool, default=False, help="False if running on AWS, True if running locally")
-	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
+	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/SCINet/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
@@ -73,6 +73,33 @@ class GeoMatch:
 		return confidence
 
 
+	def evaluate(self, sample1, sample2, landmarks1, landmarks2):
+		fa1 = FaceAlign(sample1, self.predictor)
+		fa2 = FaceAlign(sample2, self.predictor)
+
+		image1, boxes1, box_list1 = fa1.forward()
+		image2, boxes2, box_list2 = fa2.forward()
+
+		box1_list = []
+		matched_boxes = {}
+		for i in range(len(boxes1)):
+			for j in range(len(boxes2)):
+				ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
+				IoU = ca.evaluate()
+				if IoU>0:
+					confidence = self.confidence(landmarks1[0], landmarks2[0], box_list1[i], box_list2[j])
+
+					metric = 0.5*IoU + 0.5*confidence
+					if i in box1_list:
+						if metric> matched_boxes[i][0]:
+							matched_boxes[i] = (metric, j)
+					else:
+						matched_boxes[i] = (metric, j)
+						box1_list.append(i)
+
+		return matched_boxes
+
+
 
 
 
@@ -83,43 +110,47 @@ class GeoMatch:
 			sample2 = (sample[1], sample[3])
 			landmarks1 = sample[4]
 			landmarks2 = sample[5]
+			
 
-			fa1 = FaceAlign(sample1, self.predictor)
-			fa2 = FaceAlign(sample2, self.predictor)
+			try:
+				
+				matched_boxes = self.evaluate(sample1, sample2, landmarks1, landmarks2)
+				results.append(matched_boxes)
+			except:
+				print("NO FACE FOUND")
+			finally:
+				pass
 
-			image1, boxes1, box_list1 = fa1.forward()
-			image2, boxes2, box_list2 = fa2.forward()
-
-			box1_list = []
-			matched_boxes = {}
-			for i in range(len(boxes1)):
-				for j in range(len(boxes2)):
-					ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
-					IoU = ca.evaluate()
-					if IoU>0:
-						confidence = self.confidence(landmarks1[0], landmarks2[0], box_list1[i], box_list2[j])
-
-						metric = 0.5*IoU + 0.5*confidence
-						if i in box1_list:
-							if metric> matched_boxes[i][0]:
-								matched_boxes[i] = (metric, j)
-						else:
-							matched_boxes[i] = (metric, j)
-							box1_list.append(i)
-
-			results.append(matched_boxes)
+			
 
 		if len(results)==len(self.train_loader):
 			print(results)
 			print("DONE")
 		else:
 			print(len(results), len(self.train_loader))
+		return results
+
+
+
+	def calc_performance(self):
+		results = self.run()
+		count = 0
+		total_metric = 0
+		for i in results:
+			for  j in i:
+				total_metric+=i[j][0]
+				count+=1
+		avg_metric = total_metric/count
+
+		print("{} Observations: {}".format(count, avg_metric))
+		return avg_metric
+
+
 
 
 if __name__ == "__main__":
 	geomatch = GeoMatch()
-	geomatch.run()
-
+	geomatch.calc_performance()
 
 
 
