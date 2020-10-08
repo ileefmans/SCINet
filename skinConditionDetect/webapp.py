@@ -108,19 +108,21 @@ if (st.sidebar.button("Run")) and (image1 is not None) and (image2 is not None) 
 	image1 = np.array(image1) 
 	image2 = np.array(image2) 
 			
-	image10 = cv2.resize(image1, (100,175))
-	image20 = cv2.resize(image2, (100,175))
+	image10 = cv2.resize(image1, (135,175))
+	image20 = cv2.resize(image2, (135,175))
+
+
 
 	# Draws bounding boxes
-	cv2.rectangle(image10,(15,118),(15+20,118+20),(255,0,0),1)
-	cv2.rectangle(image10,(30,145),(30+12,145+12),(255,0,0),1)
-	cv2.rectangle(image10,(61,120),(61+17,120+33),(255,0,0),1)
-	cv2.rectangle(image20,(23,125),(23+15,125+15),(255,0,0),1)
-	cv2.rectangle(image20,(63,143),(65+14,145+15),(255,0,0),1)
+	# cv2.rectangle(image10,(15,118),(15+20,118+20),(255,0,0),1)
+	# cv2.rectangle(image10,(30,145),(30+12,145+12),(255,0,0),1)
+	cv2.rectangle(image10,(75,63),(75+40,63+30),(255,0,0),1)
+	cv2.rectangle(image10,(80,112),(80+35,112+30),(255,0,0),1)
+	cv2.rectangle(image20,(90,63),(90+25,63+30),(255,0,0),1)
 
 	# enlarge image
-	image10 = cv2.resize(image10, (round(100*1.5), round(175*1.5)))
-	image20 = cv2.resize(image20, (round(100*1.5), round(175*1.5)))
+	# image10 = cv2.resize(image10, (round(135*1.35), round(175*1.35)))
+	# image20 = cv2.resize(image20, (round(135*1.35), round(175*1.35)))
 
 	
 
@@ -139,26 +141,26 @@ if (st.sidebar.button("Run")) and (image1 is not None) and (image2 is not None) 
 	placeholder2 = st.empty()
 
 	placeholder2.markdown("""**All identified conditions:**   
-		- Image 1: {bbox1: acne, bbox2: acne, bbox3: acne}  
-		- Image 2: {bbox1: acne, bbox2: darkspots} """)
+		- Image 1: {bbox1: acne, bbox2: acne}  
+		- Image 2: {bbox1: acne """)
 
 	with st.spinner('Determining Persistent conditions...'):
 		sleep(5)
 
 
-		image11 = cv2.resize(image1, (100,175))
-		image21 = cv2.resize(image2, (100,175))
+		image11 = cv2.resize(image1, (135,175))
+		image21 = cv2.resize(image2, (135,175))
 
-		cv2.rectangle(image11,(15,118),(15+20,118+20),(0,255,0),1)
+		cv2.rectangle(image11,(75,63),(75+40,63+30),(0,255,0),1)
 		#cv2.rectangle(image10,(30,145),(30+12,145+12),(255,0,0),1)
 		#cv2.rectangle(image10,(61,120),(61+17,120+33),(255,0,0),1)
-		cv2.rectangle(image21,(23,125),(23+15,125+15),(0,255,0),1)
+		cv2.rectangle(image21,(90,63),(90+25,63+30),(0,255,0),1)
 		#cv2.rectangle(image20,(63,143),(65+14,145+15),(255,0,0),1)
 
 
 		# enlarge image
-		image11 = cv2.resize(image11, (round(100*1.5), round(175*1.5)))
-		image21 = cv2.resize(image21, (round(100*1.5), round(175*1.5)))
+		# image11 = cv2.resize(image11, (round(135*1.35), round(175*1.35)))
+		# image21 = cv2.resize(image21, (round(135*1.35), round(175*1.35)))
 
 		placeholder.image([image11, image21])
 		placeholder2.markdown("""**Persistent Conditions:**    
