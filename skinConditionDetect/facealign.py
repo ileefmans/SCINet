@@ -26,7 +26,13 @@ class FaceAlign:
         self.predictor = predictor
 
         #initialize face detector, facial landmark predictor, and facial aligner
+
+        # -------------------------------------------------------------------------
         self.detector = dlib.get_frontal_face_detector()
+        #self.detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
+
+
+        # -------------------------------------------------------------------------
         self.predictor = dlib.shape_predictor(self.predictor)
         self.face_align = FaceAligner(self.predictor, desiredFaceWidth=256)
         

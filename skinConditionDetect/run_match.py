@@ -64,11 +64,16 @@ class GeoMatch:
 
 	def confidence(self, landmarks1, landmarks2, box1, box2):
 		total_distance = 0
+		count = 0
 		for i in range(len(landmarks1)):
 			distance1 = self.euclidean_distance(box1[0], box1[1], landmarks1[i][0], landmarks1[i][1])
-			distance2 = self.euclidean_distance(box1[0], box1[1], landmarks1[i][0], landmarks1[i][1])
-			total_distance+=abs(distance1-distance2)
-		avg_distance = total_distance/((256**2 +256**2)**(1/2))
+			distance2 = self.euclidean_distance(box1[0], box1[1], landmarks2[i][0], landmarks2[i][1])
+			distance = abs(distance1-distance2)
+			normalized_distance = distance/((256**2 +256**2)**(1/2))
+			total_distance += normalized_distance
+			count+=1
+		avg_distance =  total_distance/count
+
 		confidence = 1 -  avg_distance
 		return confidence
 
@@ -92,9 +97,9 @@ class GeoMatch:
 					metric = 0.5*IoU + 0.5*confidence
 					if i in box1_list:
 						if metric> matched_boxes[i][0]:
-							matched_boxes[i] = (metric, j)
+							matched_boxes[i] = (metric, IoU, confidence, j)
 					else:
-						matched_boxes[i] = (metric, j)
+						matched_boxes[i] = (metric, IoU, confidence, j)
 						box1_list.append(i)
 
 		return matched_boxes
