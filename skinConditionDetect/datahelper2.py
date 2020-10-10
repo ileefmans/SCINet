@@ -258,7 +258,7 @@ class CreateDataset(torch.utils.data.Dataset):
 				image2 = cv2.cvtColor(np.array(image2), cv2.COLOR_RGB2BGR)
 				# image1 = cv2.imread(obj21['Body'])
 				# image2 = cv2.imread(obj22['Body'])
-				return image1, image2, annotation1, annotation2
+				return image1, image2, annotation1, annotation2, landmark1, landmark2
 			else:
 				image1 = Image.open(obj21['Body'])
 				image2 = Image.open(obj22['Body'])
