@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 import torchvision
 import torch
 from torch.utils.data import DataLoader
+import argparse
 
 
 
@@ -32,7 +33,9 @@ ops = get_args()
 
 
 # Create dataset
-datset = CreateDataset(pickle_path, data_directory, local=ops.local, geometric=ops.geometric, access_key=ops.access_key, secret_access_key=ops.secret_access_key, transform=torchvision.transforms.ToTensor())
+dataset = CreateDataset(ops.local_pickle_path, ops.local_data_directory, local=ops.local, geometric=ops.geometric, access_key=ops.access_key, secret_access_key=ops.secret_access_key, transform=torchvision.transforms.ToTensor())
+
+
 def my_collate(batch):
     image0 = [item[0] for item in batch]
     image1 = [item[1] for item in batch]
@@ -40,12 +43,25 @@ def my_collate(batch):
     annotation1 = [item[3] for item in batch]
     landmark0 = [item[4] for item in batch]
     landmark1 = [item[5] for item in batch]
+
     return image0, image1, annotation0, annotation1, landmark0, landmark1
-train_loader = DataLoader(dataset=dataset, batch_size=4, num_workers=4, shuffle=True, collate_fn=my_collate)
+
+
+train_loader = DataLoader(dataset=dataset, batch_size=ops.batch_size, num_workers=ops.num_workers, shuffle=ops.shuffle, collate_fn=my_collate)
 sample = iter(train_loader).next()
 
-
-print(sample[0].size(), type(sample[1]))
+print(sample[0])
+print("\n \n \n \n")
+print(sample[1])
+print("\n \n \n \n")
+print(sample[2])
+print("\n \n \n \n")
+print(sample[3])
+print("\n \n \n \n")
+print(sample[4])
+print("\n \n \n \n")
+print(sample[5])
+#print(sample[0][0].size(), type(sample[1][0]))
 
 
 
