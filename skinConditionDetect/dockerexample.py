@@ -1,4 +1,4 @@
-from datahelper2 import CreateDataset
+from datahelper2 import CreateDataset, my_collate
 from torch.utils.data import DataLoader
 import torchvision
 import torch
@@ -13,7 +13,7 @@ def get_args():
 	#parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
 	#parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
 	parser.add_argument("--local", type=bool, default=False, help="False if running on AWS, True if running locally")
-	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/SCINet/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
+	parser.add_argument("--local_pickle_path", type=str, default="pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
@@ -29,22 +29,24 @@ def get_args():
 
 ops = get_args()
 
-
+print("\n \n \n ", "Local:", ops.local, "Geometric:", ops.geometric, "Pickle Path:", ops.remote_pickle_path, "\n \n \n")
 
 
 # Create dataset
-dataset = CreateDataset(ops.local_pickle_path, ops.local_data_directory, local=ops.local, geometric=ops.geometric, access_key=ops.access_key, secret_access_key=ops.secret_access_key, transform=torchvision.transforms.ToTensor())
+dataset = CreateDataset(ops.remote_pickle_path, ops.remote_data_directory, local=ops.local, geometric=ops.geometric, access_key=ops.access_key, secret_access_key=ops.secret_access_key, transform=torchvision.transforms.ToTensor())
 
 
-def my_collate(batch):
-    image0 = [item[0] for item in batch]
-    image1 = [item[1] for item in batch]
-    annotation0 = [item[2] for item in batch]
-    annotation1 = [item[3] for item in batch]
-    landmark0 = [item[4] for item in batch]
-    landmark1 = [item[5] for item in batch]
+# def my_collate(batch):
+#     image0 = [item[0] for item in batch]
+#     image1 = [item[1] for item in batch]
+#     annotation0 = [item[2] for item in batch]
+#     annotation1 = [item[3] for item in batch]
+#     landmark0 = [item[4] for item in batch]
+#     landmark1 = [item[5] for item in batch]
 
-    return image0, image1, annotation0, annotation1, landmark0, landmark1
+#     return image0, image1, annotation0, annotation1, landmark0, landmark1
+
+print(len(dataset[0]))
 
 
 train_loader = DataLoader(dataset=dataset, batch_size=ops.batch_size, num_workers=ops.num_workers, shuffle=ops.shuffle, collate_fn=my_collate)
