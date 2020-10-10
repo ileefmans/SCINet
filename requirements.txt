@@ -11,6 +11,9 @@ requests
 tqdm
 boto3
 opencv-python
+imutils
+argparse
+streamlit
 
 
 aniso8601==8.0.0
