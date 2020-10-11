@@ -4,6 +4,7 @@ import argparse
 import torchvision
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import pandas as pd
 
 
 def get_args():
@@ -112,6 +113,11 @@ class GeoMatch:
 
 	def run(self):
 		results =[]
+		metric = []
+		IoU = []
+		confidence = []
+		data = {'metric': metric, 'IoU': IoU, 'confidence': confidence}
+		df = pd.DataFrame(data=data)
 		for sample in tqdm(self.train_loader):
 			sample1 = (sample[0], sample[2])
 			sample2 = (sample[1], sample[3])
@@ -120,9 +126,23 @@ class GeoMatch:
 			
 
 			try:
-				
+				# Evaluate matches
 				matched_boxes = self.evaluate(sample1, sample2, landmarks1, landmarks2)
+
+				# If boxes were matched append metric, IoU and confidence to dataframe
+				if len(matched_boxes)>0:
+					for i in matched_boxes:
+						print("IN LOOP")
+						new_row = {'metric': matched_boxes[i][0], 'IoU': matched_boxes[i][1], 'confidence': matched_boxes[i][2]}
+						print("NEW_ROW LEN:", len(new_row))
+						df = df. append(new_row, ignore_index=True)
+						print("LEN DF:", len(df))
+						# Save or overwrite csv file with each iteration
+						df.to_csv("table_of_metrics.csv")
+
+				# Append results to list
 				results.append(matched_boxes)
+
 			except:
 				#print("NO FACE FOUND")
 				pass
