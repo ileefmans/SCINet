@@ -12,11 +12,12 @@ import numpy as np
 
 
 class FaceAlign:
-    def __init__(self, sample, predictor):
+    def __init__(self, sample, predictor, detector="HOG"):
         """
             Args:
                 image (JPEG): Image to be processed
                 predictor (dlib predictor): facial landmark predictor from dlib
+                detector (string): Type of facial detector used "HOG": HOG detector, "CNN": CNN detector
         """
         self.sample = sample
         self.image = self.sample[0][0]
@@ -24,12 +25,15 @@ class FaceAlign:
         self.width = np.size(self.image, 1)
         self.annotation = self.sample[1][0]
         self.predictor = predictor
+        self.detector = detector
 
         #initialize face detector, facial landmark predictor, and facial aligner
 
         # -------------------------------------------------------------------------
-        self.detector = dlib.get_frontal_face_detector()
-        #self.detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
+        if self.detector == "HOG":
+            self.detector = dlib.get_frontal_face_detector()
+        else:
+            self.detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
 
         # -------------------------------------------------------------------------

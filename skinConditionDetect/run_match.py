@@ -9,6 +9,7 @@ from tqdm import tqdm
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
 	parser.add_argument("--predictor", type=str, default='shape_predictor_68_face_landmarks.dat', help="facial landmark predictor from dlib")
+	parser.add_argument("--detector", type=str, default='HOG', help='type of facial detector model used, "HOG" for HOG detector, "CNN" for CNN detector')
 	#parser.add_argument("-i", "--sample1", required=True, help="path to first input image")   
 	#parser.add_argument("-i", "--sample1", required=True, help="path to second input image")  
 	parser.add_argument("--local", type=bool, default=False, help="False if running on AWS, True if running locally")
@@ -34,6 +35,7 @@ class GeoMatch:
 
 		self.ops = get_args()
 		self.predictor = self.ops.predictor
+		self.detector = self.ops.detector
 		self.local = self.ops.local
 		print('\n \n', self.local, '\n \n' )
 
@@ -79,8 +81,8 @@ class GeoMatch:
 
 
 	def evaluate(self, sample1, sample2, landmarks1, landmarks2):
-		fa1 = FaceAlign(sample1, self.predictor)
-		fa2 = FaceAlign(sample2, self.predictor)
+		fa1 = FaceAlign(sample1, self.predictor, self.detector)
+		fa2 = FaceAlign(sample2, self.predictor, self.detector)
 
 		image1, boxes1, box_list1 = fa1.forward()
 		image2, boxes2, box_list2 = fa2.forward()
