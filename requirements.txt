@@ -14,6 +14,7 @@ opencv-python
 imutils
 argparse
 streamlit
+dlib
 
 
 aniso8601==8.0.0
