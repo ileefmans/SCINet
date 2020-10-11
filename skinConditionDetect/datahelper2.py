@@ -9,6 +9,7 @@ import numpy as np
 from preprocess import Image_Process
 import boto3
 import cv2
+import matplotlib.pyplot as plt 
 
 
 
@@ -249,6 +250,20 @@ class CreateDataset(torch.utils.data.Dataset):
 			obj21 = s3.get_object(Bucket="followup-annotated-data", Key=image_path1)
 			obj22 = s3.get_object(Bucket="followup-annotated-data", Key=image_path2)
 
+			# content21 = obj21['Body'].read()
+			# content22 = obj21['Body'].read()
+
+			# # creating 1D array from bytes data range between[0,255]
+			# np_array1 = np.fromstring(content21, np.uint8)
+			# np_array2 = np.fromstring(content22, np.uint8)
+		 #    # decoding array
+		 #    image1 = cv2.imdecode(np_array1, cv2.IMREAD_COLOR)
+		 #    image2 = cv2.imdecode(np_array2, cv2.IMREAD_COLOR)
+
+			
+
+
+
 ####--------------------------here
 
 			if self.geometric==True:
@@ -256,8 +271,33 @@ class CreateDataset(torch.utils.data.Dataset):
 				image2 = Image.open(obj22['Body'])
 				image1 = cv2.cvtColor(np.array(image1), cv2.COLOR_RGB2BGR)
 				image2 = cv2.cvtColor(np.array(image2), cv2.COLOR_RGB2BGR)
-				# image1 = cv2.imread(obj21['Body'])
-				# image2 = cv2.imread(obj22['Body'])
+
+				image1 = cv2.rotate(image1, cv2.ROTATE_90_COUNTERCLOCKWISE)
+				image2 = cv2.rotate(image2, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+				#plt.imshow(cv2.cvtColor(image1, cv2.COLOR_BGR2RGB))
+				#plt.show()
+				# image1 = cv2.imdecode('.jpg', img1)
+				# image2 = cv2.imdecode('.jpg', img2)
+
+
+				# content21 = obj21['Body']
+				# content22 = obj21['Body']
+
+				# content21 = np.fromstring(content21, dtype='uint8')
+				# content21 = np.fromstring(content22, dtype='uint8')
+				
+
+
+				# creating 1D array from bytes data range between[0,255]
+				#np_array1 = np.fromstring(content21,dtype=int)
+				#np_array2 = np.fromstring(content22,dtype=int)
+			    # decoding array
+				# image1 = cv2.imdecode(content21, cv2.IMREAD_COLOR)#, cv2.IMREAD_COLOR)
+				# image2 = cv2.imdecode(content22, cv2.IMREAD_COLOR)#, cv2.IMREAD_COLOR)
+
+
+
 				return image1, image2, annotation1, annotation2, landmark1, landmark2
 			else:
 				image1 = Image.open(obj21['Body'])
