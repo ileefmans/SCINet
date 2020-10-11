@@ -122,7 +122,8 @@ class GeoMatch:
 				matched_boxes = self.evaluate(sample1, sample2, landmarks1, landmarks2)
 				results.append(matched_boxes)
 			except:
-				print("NO FACE FOUND")
+				#print("NO FACE FOUND")
+				pass
 			finally:
 				pass
 

@@ -70,6 +70,7 @@ class FaceAlign:
 
 
     def forward(self):
+        #print("IMAGE TYPE", type(self.image))
         facebox = self.facebox(self.image)
         aligned_face = self.face_align.align(self.image, self.gray, facebox)
         box_ims, box_list = self.annotation_extract(self.sample, self.height, self.width)
