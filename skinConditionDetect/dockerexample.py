@@ -36,16 +36,6 @@ print("\n \n \n ", "Local:", ops.local, "Geometric:", ops.geometric, "Pickle Pat
 dataset = CreateDataset(ops.remote_pickle_path, ops.remote_data_directory, local=ops.local, geometric=ops.geometric, access_key=ops.access_key, secret_access_key=ops.secret_access_key, transform=torchvision.transforms.ToTensor())
 
 
-# def my_collate(batch):
-#     image0 = [item[0] for item in batch]
-#     image1 = [item[1] for item in batch]
-#     annotation0 = [item[2] for item in batch]
-#     annotation1 = [item[3] for item in batch]
-#     landmark0 = [item[4] for item in batch]
-#     landmark1 = [item[5] for item in batch]
-
-#     return image0, image1, annotation0, annotation1, landmark0, landmark1
-
 print(len(dataset[0]))
 
 
