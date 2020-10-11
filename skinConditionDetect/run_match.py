@@ -135,6 +135,7 @@ class GeoMatch:
 			print(results)
 			print("DONE")
 		else:
+			print(results)
 			print(len(results), len(self.train_loader))
 		return results
 
