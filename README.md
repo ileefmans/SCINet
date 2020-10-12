@@ -2,10 +2,9 @@
 
 
 ![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey)
-[![Build Status](https://travis-ci.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions.svg?token=uqQex7VxKszGWbK9PpaD&branch=master)](https://travis-ci.com/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
-![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
-![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/Re-Identifying_Persistent_Skin_Conditions.svg)
-![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/Re-Identifying_Persistent_Skin_Conditions)
+![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/SCINet)
+![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
+![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
 
 
 SCINet identifies facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, with conditions already detected, we can automate the process of identifying which conditions persist. 
