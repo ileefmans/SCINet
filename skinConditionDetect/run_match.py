@@ -18,7 +18,7 @@ def get_args():
 	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
 	parser.add_argument("--local_data_directory", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Data", help="Path to data")
 	parser.add_argument("--remote_data_directory", type=str, default="<blank>", help="no remote data dictionary applicable")
-	parser.add_argument("--shuffle", type=bool, default=True, help="True if dataloader shuffles input samples before batching, False if samples are batched in order")
+	parser.add_argument("--shuffle", type=bool, default=False, help="True if dataloader shuffles input samples before batching, False if samples are batched in order")
 	parser.add_argument("--batch_size", type=int, default=1, help="Minibatch size")
 	parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
 	parser.add_argument("--geometric", type=bool, default=True, help="True: return samples condusive for geometric transform, False: return smaples condusive for deep learning")

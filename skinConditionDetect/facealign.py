@@ -69,7 +69,9 @@ class FaceAlign:
 		rects, image, angle = self.try_detector_rotations(gray)
 		if len(rects) != 1:
 			print(len(rects))
-			raise Exception("Input Error: detected more than one face in input image, expected one face")
+			#raise Exception("Input Error: detected more than one face in input image, expected one face")
+			(x, y, w, h) = rect_to_bb(rects[0])
+			return rects[0], image, angle
 		else:
 			(x, y, w, h) = rect_to_bb(rects[0])
 			return rects[0], image, angle
