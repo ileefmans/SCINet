@@ -7,6 +7,11 @@ import torchvision
 import matplotlib.pyplot as plt
 
 
+"""
+Script to get example image from Bi-Autoencoder
+"""
+
+
 def process_for_inference(box, width, height):
     # Create blank image size of picture
     box_im = Image.new('RGB', (width, height))
