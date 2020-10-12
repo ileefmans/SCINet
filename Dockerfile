@@ -6,6 +6,7 @@ COPY skinConditionDetect/dockerexample.py /
 COPY requirements.txt /
 COPY skinConditionDetect/pickle/simple_train_dict.pkl /
 
+RUN apt-get clean
 RUN apt-get update
 RUN apt-get install 'ffmpeg'\
     'libsm6'\ 
