@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from datahelper import CreateDataset, my_collate, my_collate2
 from preprocess import Image_Process
 import torchvision
-from model import IANet
+from model import SCINet20
 import argparse
 from tqdm import tqdm
 import boto3

@@ -211,7 +211,7 @@ class Decoder(nn.Module):
 
 		return x
 
-class IANet(nn.Module):
+class SCINet20(nn.Module):
 
 	def __init__(self):
 		super(IANet, self).__init__()

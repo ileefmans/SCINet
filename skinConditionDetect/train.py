@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 import torchvision
-from model import IANet
+from model import SCINet20
 import argparse
 from tqdm import tqdm
 import boto3
@@ -60,7 +60,7 @@ class Trainer:
 		
 		# Import model
 		#if self.model_version==1:
-		self.model = IANet().to(self.device)
+		self.model = SCINet20().to(self.device)
 		
 
 		self.model_name = "SCINet"
