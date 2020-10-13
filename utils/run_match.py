@@ -36,12 +36,13 @@ class RunSCINet10:
 	"""
 	def __init__(self):
 
+		# Import argparser and get args
 		self.ops = get_args()
 		self.predictor = self.ops.predictor
 		self.detector = self.ops.detector
 		self.local = self.ops.local
-		print('\n \n', self.local, '\n \n' )
 
+		# Define attributes for local vs remote
 		if self.local==False:
 			self.pickle_path = self.ops.remote_pickle_path
 			self.data_directory = self.ops.remote_data_directory
@@ -58,16 +59,26 @@ class RunSCINet10:
 		self.access_key = self.ops.access_key
 		self.secret_access_key = self.ops.secret_access_key
 
+
+
 		# Initialize train loader
 		self.trainset = CreateDataset(self.pickle_path, self.data_directory, local=self.local, geometric=self.geometric, access_key=self.access_key, secret_access_key=self.secret_access_key, transform=self.transform)
 		self.train_loader = DataLoader(dataset=self.trainset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=self.shuffle, collate_fn=my_collate)
 
 
 	def euclidean_distance(self, x1, y1, x2, y2):
+		"""
+			Helper function calculating euclidean distance
+		"""
 		return ((x1-x2)**2 + (y1-y2)**2)**(1/2)
 
 
 	def confidence(self, landmarks1, landmarks2, box1, box2):
+		"""
+			Args:
+				landmarks1 ()
+			Helper function to calculate confidence for matched boxes
+		"""
 		total_distance = 0
 		count = 0
 		for i in range(len(landmarks1)):
