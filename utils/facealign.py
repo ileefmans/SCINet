@@ -86,7 +86,6 @@ class FaceAlign:
 		#rects = self.detector(gray, 1) # returns a list of bounding boxes around face
 		rects, image, angle = self.try_detector_rotations(gray)
 		if len(rects) != 1:
-			print(len(rects))
 			#raise Exception("Input Error: detected more than one face in input image, expected one face")
 			(x, y, w, h) = rect_to_bb(rects[0])
 
