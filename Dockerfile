@@ -1,13 +1,13 @@
 FROM python:3.7
 
-COPY skinConditionDetect/datahelper.py /
-COPY skinConditionDetect/preprocess.py /
-COPY skinConditionDetect/facealign.py /
-COPY skinConditionDetect/run_match.py /
+COPY utils/datahelper.py /
+COPY utils/preprocess.py /
+COPY utils/facealign.py /
+COPY utils/run_match.py /
 COPY requirements.txt /
-COPY skinConditionDetect/pickle/simple_train_dict.pkl /
-COPY skinConditionDetect/shape_predictor_68_face_landmarks.dat /
-COPY skinConditionDetect/mmod_human_face_detector.dat /
+COPY utils/pickle/simple_train_dict.pkl /
+COPY utils/shape_predictor_68_face_landmarks.dat /
+COPY utils/mmod_human_face_detector.dat /
 
 RUN apt-get update
 RUN apt-get install 'ffmpeg'\
