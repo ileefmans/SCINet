@@ -1,6 +1,6 @@
 FROM python:3.7
 
-COPY skinConditionDetect/datahelper2.py /
+COPY skinConditionDetect/datahelper.py /
 COPY skinConditionDetect/preprocess.py /
 COPY skinConditionDetect/facealign.py /
 COPY skinConditionDetect/run_match.py /
