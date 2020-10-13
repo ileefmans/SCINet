@@ -7,6 +7,7 @@ from tqdm import tqdm
 import pandas as pd
 
 
+# Create argument parser
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
 	parser.add_argument("--predictor", type=str, default='shape_predictor_68_face_landmarks.dat', help="facial landmark predictor from dlib")
@@ -29,7 +30,10 @@ def get_args():
 
 
 
-class GeoMatch:
+class RunSCINet10:
+	"""
+		Class running SCINet 1.0 (geometric matching) on existing dataset
+	"""
 	def __init__(self):
 
 		self.ops = get_args()
@@ -176,8 +180,8 @@ class GeoMatch:
 
 
 if __name__ == "__main__":
-	geomatch = GeoMatch()
-	geomatch.calc_performance()
+	runSCINet = RunSCINet10()
+	runSCINet.calc_performance()
 
 
 
