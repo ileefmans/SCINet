@@ -12,6 +12,10 @@ import numpy as np
 
 
 class FaceAlign:
+	"""
+		Class for aligning faces along with the bounding boxes corresponding to the face
+	"""
+
 	def __init__(self, sample, predictor, detector="HOG"):
 		"""
 			Args:
@@ -29,9 +33,9 @@ class FaceAlign:
 
 		#initialize face detector, facial landmark predictor, and facial aligner
 		if self.detector == "HOG":
-			self.detector = dlib.get_frontal_face_detector()
+			self.detector = dlib.get_frontal_face_detector() # Ensamble of regression trees
 		else:
-			self.detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
+			self.detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat') # CNN based
 
 		self.predictor = dlib.shape_predictor(self.predictor)
 		self.face_align = FaceAligner(self.predictor, desiredFaceWidth=256)
@@ -64,6 +68,7 @@ class FaceAlign:
 					image = cv2.rotate(image, cv2.ROTATE_180)
 					rects = self.detector(image, 1)
 					angle = 3
+
 		# return rectangle for bounding box around face, image, and key for angle which image was rotated
 		return rects, image, angle
 
@@ -84,9 +89,11 @@ class FaceAlign:
 			print(len(rects))
 			#raise Exception("Input Error: detected more than one face in input image, expected one face")
 			(x, y, w, h) = rect_to_bb(rects[0])
+
 			return rects[0], image, angle
 		else:
 			(x, y, w, h) = rect_to_bb(rects[0])
+
 			return rects[0], image, angle
 		
 		
@@ -116,10 +123,22 @@ class FaceAlign:
 			cv2.rectangle(box_image,(x,y),(w,h),(0,255,0),-1)
 			output.append((box_image, label))
 			box_list.append((x,y,w,h))
+
 		return output, box_list
 
+
 	def rotate(self, image, angle):
-		# rotate image by the desired degree
+		"""
+			Args:
+				image (cv2 image): Image to be rotated
+
+				angel (int): Key for angle of rotation {0: no rotation, 1: 90 degrees counterclockwise, 
+							 2: 90 degrees clockwise, 3: 180 degrees}
+
+			Helper function for rotating an image
+
+		"""
+
 		if angle==0:
 			pass
 		elif angle==1:
@@ -134,7 +153,10 @@ class FaceAlign:
 
 
 	def forward(self):
-		#print("IMAGE TYPE", type(self.image))
+		"""
+			Method that aligns faces and performs the same transformation to the bounding boxes
+		"""
+
 		facebox, image, angle = self.facebox(self.image)
 
 		# Rotate gray image same degrees as image was rotated to find facebox
@@ -153,6 +175,12 @@ class FaceAlign:
 
 
 class CalculateMatches:
+	"""
+		Class that matches bounding boxes in two images based on their intersection over union
+
+		Note that confidence is calculated in the run_match.py script
+	""" 
+
 	def __init__(self, image1, image2, box_image1, box_image2):
 		"""
 			Args:
@@ -169,16 +197,27 @@ class CalculateMatches:
 		self.box_im2 = box_image2
 		
 	def calc_IoU(self):
+
+		"""
+			Method to calculate the Intersection over Union between two bounding boxes post alignment
+		"""
+
+		# Conditional statement to make sure we are only comparing conditions of the same category
+		# ie: acne to acne
 		if self.box_im1[1]!=self.box_im2[1]:
 			return False
+
+		#Calculate Intersection over union	
 		union = np.count_nonzero(self.box_im1[0] + self.box_im2[0])
 		total  = np.count_nonzero(self.box_im1[0]) + np.count_nonzero(self.box_im2[0])
 		intersection = total-union
 		IoU = intersection/union
 		return IoU
-	def calc_confidence(self):
-		pass
+	
 	def evaluate(self):
+		"""
+			Returns IoU
+		"""
 		IoU = self.calc_IoU()
 		return IoU
 
