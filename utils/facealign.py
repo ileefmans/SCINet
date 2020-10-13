@@ -15,7 +15,7 @@ class FaceAlign:
 	def __init__(self, sample, predictor, detector="HOG"):
 		"""
 			Args:
-				image (JPEG): Image to be processed
+				sample (dataloader obj): Sample from dataloader
 				predictor (dlib predictor): facial landmark predictor from dlib
 				detector (string): Type of facial detector used "HOG": HOG detector, "CNN": CNN detector
 		"""
@@ -28,15 +28,11 @@ class FaceAlign:
 		self.detector = detector
 
 		#initialize face detector, facial landmark predictor, and facial aligner
-
-		# -------------------------------------------------------------------------
 		if self.detector == "HOG":
 			self.detector = dlib.get_frontal_face_detector()
 		else:
 			self.detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
-
-		# -------------------------------------------------------------------------
 		self.predictor = dlib.shape_predictor(self.predictor)
 		self.face_align = FaceAligner(self.predictor, desiredFaceWidth=256)
 		
@@ -44,7 +40,16 @@ class FaceAlign:
 	
 
 	def try_detector_rotations(self, image):
-		# Try different rotations until image is in the right orientation
+
+		"""
+			Args: 
+				image (cv2 image): image to be rotated
+
+
+		Try different rotations until image is in the right orientation
+		Issue originates from converting from PIL image to CV2 image
+
+		"""
 		rects = self.detector(image, 1)
 		angle = 0
 		if len(rects)==0:
@@ -59,11 +64,19 @@ class FaceAlign:
 					image = cv2.rotate(image, cv2.ROTATE_180)
 					rects = self.detector(image, 1)
 					angle = 3
+		# return rectangle for bounding box around face, image, and key for angle which image was rotated
 		return rects, image, angle
 
 
 
 	def facebox(self, image):
+		"""
+			Args: 
+				image (cv2 image): Patient image in which you are trying to detect a face
+
+			Method detects a face in an image and returns the boudning box coordinates around the face
+
+		"""
 		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # convert to greyscale
 		#rects = self.detector(gray, 1) # returns a list of bounding boxes around face
 		rects, image, angle = self.try_detector_rotations(gray)
@@ -78,6 +91,17 @@ class FaceAlign:
 		
 		
 	def annotation_extract(self, sample, height, width):
+		"""
+			Args:
+				sample (dataloader obj): Sample from dataloader 
+
+				height (int): desired height of blank image to be created
+
+				width (int): desired width of the blank image to be created
+
+			Method extracts bounding boxes around skin conditions from a sample in the dataloader
+			and then creates a blank image with only the bounding box in the image
+		"""
 		sample = sample[1][0]
 		output = []
 		box_list = []
