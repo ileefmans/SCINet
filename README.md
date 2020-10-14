@@ -14,7 +14,7 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
 ## Overview
 *SCINet* identifies facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, and with their conditions already detected, *SCINet* identifies the corresponding conditions in each image. These corresponding conditions are considered by Cureskin to be persistent conditions. 
 
-<img src="https://github.com/ileefmans/SCINet/blob/master/images/Example_image.png" width=300 align=center>
+<img src="https://github.com/ileefmans/SCINet/blob/master/images/Example_image.png" width=700 align=center>
   
   The link to below leads to a quick demo providing a high-level intuition about what this module does.
 
