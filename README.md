@@ -22,9 +22,9 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
 SCINet leverages opencv's pretrained facial detection model to align the faces and then match corresponding skin conditions
   
   
-  # Getting Started  
+  ## Getting Started  
   Follow the instructions below to get clone the repo and leverage the model.
-  ## Usage  
+  ### Usage  
   
   *Note: Model weights and data these models were trained and evaluated on are not available as they are the property of Cureskin*
   
