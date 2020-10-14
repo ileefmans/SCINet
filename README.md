@@ -18,10 +18,10 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
   
   This [link](https://www.youtube.com/watch?v=fg9VBqtjan4) also provides a quick demo providing a high-level intuition about what this project does. In the next two sections I will quickly detail the two versions of *SCINet* and how they differ.
   
-## *SCINet1.0*
-*INSERT INFO ABOUT SCINet 1.0 HERE*
+### *SCINet1.0*
+*SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in each. *SCINet1.0* leverages pretrained models from ```shell script dlib ``` and ```shell script opencv```. 
 
-## *SCINet2.0*
+### *SCINet2.0*
 *INSERT INFO ABOUT SCINet 2.0 HERE*
   
   
