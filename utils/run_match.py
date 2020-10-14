@@ -148,19 +148,28 @@ class RunSCINet10:
 
 
 	def run(self):
+		"""
+			Calculate matches looping over train set
+		"""
 		results =[]
 		metric = []
 		IoU = []
 		confidence = []
+
+		# Create blank dataframe for saving and plotting example results
 		data = {'metric': metric, 'IoU': IoU, 'confidence': confidence}
 		df = pd.DataFrame(data=data)
+
+		# Loop over trainloader
 		for sample in tqdm(self.train_loader):
+
+			# Get samples and landmarks
 			sample1 = (sample[0], sample[2])
 			sample2 = (sample[1], sample[3])
 			landmarks1 = sample[4]
 			landmarks2 = sample[5]
 			
-
+			# Implement error handling in case face is not detected
 			try:
 				# Evaluate matches
 				matched_boxes = self.evaluate(sample1, sample2, landmarks1, landmarks2)
@@ -168,11 +177,8 @@ class RunSCINet10:
 				# If boxes were matched append metric, IoU and confidence to dataframe
 				if len(matched_boxes)>0:
 					for i in matched_boxes:
-						print("IN LOOP")
 						new_row = {'metric': matched_boxes[i][0], 'IoU': matched_boxes[i][1], 'confidence': matched_boxes[i][2]}
-						print("NEW_ROW LEN:", len(new_row))
 						df = df. append(new_row, ignore_index=True)
-						print("LEN DF:", len(df))
 						# Save or overwrite csv file with each iteration
 						df.to_csv("table_of_metrics.csv")
 
@@ -186,18 +192,25 @@ class RunSCINet10:
 				pass
 
 			
-
+		# Print results
 		if len(results)==len(self.train_loader):
 			print(results)
 			print("DONE")
+
+		# Print results as well as how many faces were not detected
 		else:
 			print(results)
 			print(len(results), len(self.train_loader))
+
 		return results
 
 
 
 	def calc_performance(self):
+		"""
+			Method to calculate average performance
+		"""
+		
 		results = self.run()
 		count = 0
 		total_metric = 0
