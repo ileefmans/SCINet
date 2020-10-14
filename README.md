@@ -16,10 +16,8 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
 
 <img src="https://github.com/ileefmans/SCINet/blob/master/images/example_image.png" width=700 align=center>
   
-  The link to below leads to a quick demo providing a high-level intuition about what this module does.
-
-
-[<img src="https://github.com/ileefmans/SCINet/blob/master/images/Screen_Shot_2020-10-06.png" width=300 align=center>](https://www.youtube.com/watch?v=fg9VBqtjan4)  
+  This [link](https://www.youtube.com/watch?v=fg9VBqtjan4) also provides a quick demo providing a high-level intuition about what this project does.
+  
 
 SCINet leverages opencv's pretrained facial detection model to align the faces and then match corresponding skin conditions
   
