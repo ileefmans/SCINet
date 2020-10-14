@@ -7,7 +7,7 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
 
 ## Motivation
-Identifying persistent skin conditions is essential because this information could mean the difference between continuing or altering a treatment plan.
+According to the American Academy of Dermatologist Association, **50 million** people a year experience some form of acne while only **5 million** people a year actually seek professional treatment. In the midst of a global pandemic there is a huge demand for remote medical treatment. Identifying persistent skin conditions is essential because this information could mean the difference between continuing or altering a treatment plan.
 
 ## Overview
 SCINet identifies facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, with conditions already detected, we can automate the process of identifying which conditions persist. 
