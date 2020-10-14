@@ -76,9 +76,15 @@ class RunSCINet10:
 	def confidence(self, landmarks1, landmarks2, box1, box2):
 		"""
 			Args:
-				landmarks1 ()
+				landmarks1 (list): List of coordinates for facial landmarks in image 1
+				landmarks2 (list): List of coordinates for facial landmarks in image 2
+				box1 (tuple): coordinates for bounding box in image 1
+				box2 (tuple): coordinates for bounding box in image 2
+
+
 			Helper function to calculate confidence for matched boxes
 		"""
+
 		total_distance = 0
 		count = 0
 		for i in range(len(landmarks1)):
@@ -89,28 +95,45 @@ class RunSCINet10:
 			total_distance += normalized_distance
 			count+=1
 		avg_distance =  total_distance/count
-
 		confidence = 1 -  avg_distance
+
 		return confidence
 
 
 	def evaluate(self, sample1, sample2, landmarks1, landmarks2):
+		"""
+			sample1 (tuple): First image and corresponding annotations
+			sample2 (tuple): Second image and corresponding annotations
+			landmarks1 (list): List of landmarks for first image
+			landmarks2 (list): List of landmarks for second image
+
+			Function for calculating the metric combining intersection over union with confidence
+		"""
+
+		# Initialize Facial Aligner
 		fa1 = FaceAlign(sample1, self.predictor, self.detector)
 		fa2 = FaceAlign(sample2, self.predictor, self.detector)
 
+		# Align both images and boxes
 		image1, boxes1, box_list1 = fa1.forward()
 		image2, boxes2, box_list2 = fa2.forward()
 
+
 		box1_list = []
 		matched_boxes = {}
+		# Loop through all combination of boxes calculating metric
 		for i in range(len(boxes1)):
 			for j in range(len(boxes2)):
+				# Initialize class for calculating matches
 				ca = CalculateMatches(image1, image2, boxes1[i], boxes2[j])
+				# Calculate IoU
 				IoU = ca.evaluate()
+				# Only consider boxes with some degree of overlap
 				if IoU>0:
+					# Calculate confidence and then final metric
 					confidence = self.confidence(landmarks1[0], landmarks2[0], box_list1[i], box_list2[j])
-
 					metric = 0.5*IoU + 0.5*confidence
+					# Only add highest match for each box
 					if i in box1_list:
 						if metric> matched_boxes[i][0]:
 							matched_boxes[i] = (metric, IoU, confidence, j)
