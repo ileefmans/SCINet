@@ -25,6 +25,9 @@ SCINet leverages opencv's pretrained facial detection model to align the faces a
   # Getting Started  
   Follow the instructions below to get clone the repo and leverage the model.
   ## Usage  
+  
+  *Note that model weights the data these models were trained and evaluated on are not available on this repo as they are the property of Cureskin*
+  
   1. Clone the repository:  
   ```shell script
   git clone https://github.com/ileefmans/SCINet
