@@ -16,10 +16,13 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
 
 <img src="https://github.com/ileefmans/SCINet/blob/master/images/example_image.png" width=700 align=center>
   
-  This [link](https://www.youtube.com/watch?v=fg9VBqtjan4) also provides a quick demo providing a high-level intuition about what this project does.
+  This [link](https://www.youtube.com/watch?v=fg9VBqtjan4) also provides a quick demo providing a high-level intuition about what this project does. In the next two sections I will quickly detail the two versions of *SCINet* and how they differ.
   
+## *SCINet1.0*
+*INSERT INFO ABOUT SCINet 1.0 HERE*
 
-SCINet leverages opencv's pretrained facial detection model to align the faces and then match corresponding skin conditions
+## *SCINet2.0*
+*INSERT INFO ABOUT SCINet 2.0 HERE*
   
   
   ## Getting Started  
