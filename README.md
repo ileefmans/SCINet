@@ -27,10 +27,7 @@ SCINet leverages opencv's pretrained facial detection model to align the faces a
   ## Usage  
   
   *Note that model weights the data these models were trained and evaluated on are not available on this repo as they are the property of Cureskin*
-  
- <p style="font-family: times, serif; font-size:10pt; font-style:italic">
-    Why did we use these specific parameters during the calculation of the fingerprints?
-</p>
+  <font size="-1"> Description </font>
   
   1. Clone the repository:  
   ```shell script
