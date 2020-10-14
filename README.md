@@ -7,7 +7,7 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
 
 1. [Motivation](https://github.com/ileefmans/SCINet/blob/master/README.md#motivation)
-2. Overview
+2. Overview  
   i. *SCINet1.0*
   ii. *SCINet2.0*
 
