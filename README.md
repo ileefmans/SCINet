@@ -6,7 +6,10 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
 
+## Motivation
+Identifying persistent skin conditions is essential because this information could mean the difference between continuing or altering a treatment plan.
 
+## Overview
 SCINet identifies facial skin conditions which are persistent over time. Given two facial images of the same patient at different stages in their treatment, with conditions already detected, we can automate the process of identifying which conditions persist. 
   
   The link to below leads to a quick demo providing a high-level intuition about what this module does.
