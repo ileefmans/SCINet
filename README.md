@@ -6,6 +6,11 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
 
+1. [Motivation](https://github.com/ileefmans/SCINet/blob/master/README.md#motivation)
+2. Overview
+  i. *SCINet1.0*
+  ii. *SCINet2.0*
+
 ## Motivation
 According to the American Academy of Dermatologist Association, **50 million** people a year experience some form of acne while only **5 million** people a year actually seek professional treatment. This gap between  the number of people affected and the number of people seeking treatment coupled with a global pandemic has resulted in a huge demand for remote treatment options. When providing dermatological treatment, identifying persistent skin conditions is essential because this information could mean the difference between continuing or altering a treatment plan. It was under this context that *SCINet* was born.  
 
