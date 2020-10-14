@@ -6,6 +6,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
 
+**Table of Contents**  
 - [Motivation](https://github.com/ileefmans/SCINet/blob/master/README.md#motivation)  
 - [Overview](https://github.com/ileefmans/SCINet#overview)    
   - [*SCINet1.0*](https://github.com/ileefmans/SCINet#scinet10)     
