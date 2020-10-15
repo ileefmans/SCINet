@@ -53,7 +53,7 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
   ```shell script 
   pip3 install -r requirements.txt
   ```
-  3. Start coding!! 🤓😃🤓
+  3. Start coding!! 🤓
   
   
   ## Acknowledgments and Contributions  
