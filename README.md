@@ -30,7 +30,7 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
 *SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in each image. *SCINet1.0* leverages pretrained models from ```dlib ``` and ```opencv``` such as a pretrained Convolutional Neural Net for facial detection. 
 
 ### *SCINet2.0*
-*SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```
+*SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```. The model maps the facial images to a higher dimensional latent space using convolutional layers along with a [Spatial Transformer Network (STN)](https://arxiv.org/abs/1506.02025). Then the model flattens this latent representation back down to a two dimensional image where the transformed boudning boxes from each image can be compared an matched.
   
   
   ## Getting Started  
