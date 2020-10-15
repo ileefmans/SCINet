@@ -58,7 +58,7 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
   
   ## Acknowledgments and Contributions  
   
-  All data for training and testing *SCINet* was provided by Cureskin who owns the rights to the data along with the weights of the model. This project was completed during session 20C of the Artificial Intelligence Fellowship at Insight Data Science. This is a public repository and contribution by pull request is welcomed.
+  All data for training and testing *SCINet* was provided by Cureskin who owns the rights to the data along with the weights of the model. This project was completed during session 20C of the [Artificial Intelligence Fellowship at Insight Data Science](https://insightfellows.com/ai). This is a public repository and contribution by pull request is welcomed.
   
   
   
