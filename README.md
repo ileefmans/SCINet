@@ -9,9 +9,9 @@
 - [Motivation](https://github.com/ileefmans/SCINet/blob/master/README.md#motivation)  
 - [Overview](https://github.com/ileefmans/SCINet#overview)    
   - [*SCINet1.0*](https://github.com/ileefmans/SCINet#scinet10)     
-  - [*SCINet2.0*](https://github.com/ileefmans/SCINet#scinet20)    
-- [Getting Started](https://github.com/ileefmans/SCINet#getting-started)  
-  - [Usage](https://github.com/ileefmans/SCINet#usage) 
+  - [*SCINet2.0*](https://github.com/ileefmans/SCINet#scinet20)  
+- [Usage](https://github.com/ileefmans/SCINet#usage)  
+  - [Getting Started](https://github.com/ileefmans/SCINet#getting-started)  
 - [Acknowledgments and Contributions](https://github.com/ileefmans/SCINet#acknowledgments-and-contributions)  
 
 ## Motivation
@@ -33,9 +33,9 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
 *SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```. The model maps the facial images to a higher dimensional latent space using convolutional layers along with a [Spatial Transformer Network (STN)](https://arxiv.org/abs/1506.02025). Then the model flattens this latent representation back down to a two dimensional image where the transformed boudning boxes from each image can be compared an matched. It should be noted that *SCINet2.0* is not production ready as there are a few kinks that are needed to be worked out so that the model trains more effectively.
   
   
-  ## Getting Started  
+  ## Usage  
   *SCINet* is structured specifically for use by Cureskin. In this sense there are many intricacies in the code which are specifically designed to account for the structure of Cureskin's data. The [model architecture of *SCINet2.0*](./utils/model.py) is a fairly typical custom deep learning architecture so for those who want to use this portion of the code in seperate use-cases just follow the instructions below to get clone the repo and leverage the model.
-  ### Usage  
+  ### Getting Started  
   
   *Note: Model weights and data these models were trained and evaluated on are not available as they are the property of Cureskin*
   
