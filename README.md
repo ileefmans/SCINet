@@ -34,7 +34,7 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
   
   
   ## Getting Started  
-  *SCINet* is structured specifically for use by Cureskin. In this sense there are many intricacies in the code which are specifically designed to account for the structure of Cureskin's data. The model architecture of *SCINet2.0* is a fairly typical custom deep learning architecture so for those who want to use this portion of the code in seperate use-cases just follow the instructions below to get clone the repo and leverage the model.
+  *SCINet* is structured specifically for use by Cureskin. In this sense there are many intricacies in the code which are specifically designed to account for the structure of Cureskin's data. The [model architecture of *SCINet2.0*](./utils/model.py) is a fairly typical custom deep learning architecture so for those who want to use this portion of the code in seperate use-cases just follow the instructions below to get clone the repo and leverage the model.
   ### Usage  
   
   *Note: Model weights and data these models were trained and evaluated on are not available as they are the property of Cureskin*
