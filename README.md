@@ -37,7 +37,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
   *SCINet* is structured specifically for use by Cureskin. Because of this, there are many intricacies in the code which are specifically designed to account for the structure of Cureskin's data. The [model architecture of *SCINet2.0*](./utils/model.py), by contrast, is a fairly typical custom deep learning architecture. For those who wish to use this portion of the code for different use-cases, just follow the instructions below to get clone the repo and leverage the model.
   ### Getting Started  
   
-  **Note:** *Model weights and data these models were trained and evaluated on are not available as they are the property of Cureskin*
+  **Note:** *Model weights and data these models were trained and evaluated on are not available as they are the property of Cureskin.*
   
   
   1. Clone the repository:  
