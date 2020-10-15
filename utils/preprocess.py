@@ -24,7 +24,7 @@ class Image_Process:
     
         self.new_size = desired_dimensions
     
-    # Function to expand or reduce size of image keeping aspect ration intact
+
     def expand(self, image, resample=0):
         """
         Args:
@@ -37,10 +37,14 @@ class Image_Process:
                 Image.BICUBIC
                 Image.LANCZOS
                 
+        Method to expand or reduce size of image keeping aspect ration intact
             """
+
+        # Calculate new width and new height
         new_width = round((image.width/image.height)*self.new_size[0])
         new_height = round((image.height/image.width)*self.new_size[1])
     
+        # set height and width for expanding image while keeping height width ration intact
         if new_width<= self.new_size[1]:
             new_height = self.new_size[0]
         elif new_height<= self.new_size[0]:
@@ -48,16 +52,19 @@ class Image_Process:
         else:
             raise Exception("Error in expand() go back and check how images are resized")
     
+        # expand image
         image = image.resize((new_width, new_height), resample=resample )
         return image
 
 
-    # Function to add padding to make pictures uniform size
+
     def uniform_size(self, x):
         """
         Args:
             
             x (pytorch tensor): image tensor to be conformed to be padded
+
+        Method to add padding to make pictures uniform size    
             
             """
         height = self.new_size[0]
