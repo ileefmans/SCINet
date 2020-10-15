@@ -240,37 +240,72 @@ class Trainer:
 	#SAVE MODEL PARAMETERS
 	def save_checkpoint(self, model, optimizer, model_name, epoch, loss):
 		"""
-		Function for saving model parameters
-		"""
-		if self.local==True:
-			save_path = os.path.join(self.save_path, model_name)
+			Args:
 
+				model: model whose parameters we desire to save
+
+				optimizer: optimizer whose parameters we desire to save
+
+				model_name (string): Name we will save the model as
+
+				epoch (int): current epoch when we are saving checkpoint
+
+				loss (float): current loss when we are saving checkpoint
+
+		Saves model and optimizer parameters as well as epoch and loss to accomidate training 
+		where you left off at a later time
+		"""
+
+		# For local
+		if self.local==True:
+
+			# Create model path
+			save_path = os.path.join(self.save_path, model_name)
 			if not os.path.exists(save_path):
 				os.makedirs(save_path)
 
+			# Save parameters
 			torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
 				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path+"/params.tar")
+
+		# For remote	
 		else: 
+
+			# Create path and save parameters
 			save_path =  model_name+".tar"
 			torch.save({"epoch": epoch, "model_state_dict": model.state_dict(),
 				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path)
 
-			
-			
-
+		
 
 	#LOAD MODEL PARAMETERS
 	def load_checkpoint(self, model, optimizer, model_name):
 		"""
-		Function for loading model parameters 
+			Args:
+
+				model: Model to which parameters are to be loaded
+
+				optimizer: Optimizer to which parameters are to be loaded
+
+				model_name: Name of model in path where parameters are stored
+
+		Loads training checkpoint for training at a later time
 		"""
+
+		# For local
 		if self.local==True:
+
+			# create path and load checkpoint
 			load_path = os.path.join(self.save_path, model_name, "params.tar")
 			checkpoint = torch.load(load_path)
+
+		# For remote	
 		else:
-			#obj = self.s3.get_object(Bucket="models-and-checkpoints", Key=os.path.join("checkpoints/", model_name+".tar"))
+			
+			# load checkpoint
 			checkpoint = torch.load(model_name+".tar")
 
+		# Load model state dict into model, optimizer state dict into optimizer and load epoch and loss
 		model.load_state_dict(checkpoint["model_state_dict"])
 		optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 		epoch = checkpoint["epoch"]
