@@ -210,10 +210,19 @@ class CreateDataset(torch.utils.data.Dataset):
 	
 
 	def __len__(self):
-		#return len(self.annotation_dict)
-		return 5000
+		"""
+			Overide the length function of torch.utils.data.Dataset class
+
+			Note that this returns the length of the dataset, changing this results in a change in the 
+		  	size of the dataset. Very easy way to alter the dataset for testing examples etc
+		"""
+		return len(self.annotation_dict)
+		
 
 	def __getitem__(self, index):
+		"""
+			Overide the indexing function of torch.utils.data.Dataset class
+		"""
 
 		# open annotated json as dataframe and get corresponding image path
 		if self.local is True:
@@ -227,7 +236,7 @@ class CreateDataset(torch.utils.data.Dataset):
 			annotation_df2 = pd.read_json(obj12['Body'])
 
 
-		
+		# image paths
 		image_path1 = annotation_df1.iloc[self.annotation_dict[index][0][1]].image_path
 		image_path2 = annotation_df2.iloc[self.annotation_dict[index][1][1]].image_path
 
@@ -240,93 +249,70 @@ class CreateDataset(torch.utils.data.Dataset):
 		landmark2 = self.get_landmarks(total_annotation2)
 
 
-		
+		# get images using image paths
+
+		# For running locally
 		if self.local is True:
+
+			# For SCINet1.0
 			if self.geometric==True:
 				image1 = cv2.imread(os.path.join(self.data_dir, 'images', image_path1))
 				image2 = cv2.imread(os.path.join(self.data_dir, 'images', image_path2))
+				# return data formatted for SCINet1.0
 				return image1, image2, annotation1, annotation2, landmark1, landmark2
+
+			# For SCINet2.0	
 			else:
 				image1 =  Image.open(os.path.join(self.data_dir, 'images', image_path1))
 				image2 =  Image.open(os.path.join(self.data_dir, 'images', image_path2))
 
-
-
+		# For running remotely on AWS		
 		else:
 			s3 = boto3.client("s3", aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_access_key)
 			obj21 = s3.get_object(Bucket="followup-annotated-data", Key=image_path1)
 			obj22 = s3.get_object(Bucket="followup-annotated-data", Key=image_path2)
 
-			# content21 = obj21['Body'].read()
-			# content22 = obj21['Body'].read()
-
-			# # creating 1D array from bytes data range between[0,255]
-			# np_array1 = np.fromstring(content21, np.uint8)
-			# np_array2 = np.fromstring(content22, np.uint8)
-		 #    # decoding array
-		 #    image1 = cv2.imdecode(np_array1, cv2.IMREAD_COLOR)
-		 #    image2 = cv2.imdecode(np_array2, cv2.IMREAD_COLOR)
-
-			
-
-
-
-####--------------------------here
-
+			# For SCINet1.0
 			if self.geometric==True:
 				image1 = Image.open(obj21['Body'])
 				image2 = Image.open(obj22['Body'])
 				image1 = cv2.cvtColor(np.array(image1), cv2.COLOR_RGB2BGR)
 				image2 = cv2.cvtColor(np.array(image2), cv2.COLOR_RGB2BGR)
 
+				# A large number of images need to be rotated after they are transformed from a PIL 
+				# image to a cv2 image. This is not the case for all images though. This problem is
+				# further addressed in facealign.py
 				image1 = cv2.rotate(image1, cv2.ROTATE_90_COUNTERCLOCKWISE)
 				image2 = cv2.rotate(image2, cv2.ROTATE_90_COUNTERCLOCKWISE)
-
-				#plt.imshow(cv2.cvtColor(image1, cv2.COLOR_BGR2RGB))
-				#plt.show()
-				# image1 = cv2.imdecode('.jpg', img1)
-				# image2 = cv2.imdecode('.jpg', img2)
-
-
-				# content21 = obj21['Body']
-				# content22 = obj21['Body']
-
-				# content21 = np.fromstring(content21, dtype='uint8')
-				# content21 = np.fromstring(content22, dtype='uint8')
-				
-
-
-				# creating 1D array from bytes data range between[0,255]
-				#np_array1 = np.fromstring(content21,dtype=int)
-				#np_array2 = np.fromstring(content22,dtype=int)
-			    # decoding array
-				# image1 = cv2.imdecode(content21, cv2.IMREAD_COLOR)#, cv2.IMREAD_COLOR)
-				# image2 = cv2.imdecode(content22, cv2.IMREAD_COLOR)#, cv2.IMREAD_COLOR)
-
-
-
+				# return data formatted for SCINet1.0
 				return image1, image2, annotation1, annotation2, landmark1, landmark2
+
+			# For SCINet2.0	
 			else:
 				image1 = Image.open(obj21['Body'])
 				image2 = Image.open(obj22['Body'])
 
+		# Make sure all images are RGB
 		if image1.mode != 'RGB':
 			image1 = image1.convert('RGB')
 		if image2.mode != 'RGB':
 			image2 = image2.convert('RGB')
 
-		
-
+		# Expand image
 		image1 = self.Image_Process.expand(image1)
 		image2 = self.Image_Process.expand(image2)
+
+		# Trasform to torch tensor
 		if self.transform:
 			image1 = self.transform(image1)
 			image2 = self.transform(image2)
+
+		# Make images a uniform size
 		image1 = self.Image_Process.uniform_size(image1)
 		image2 = self.Image_Process.uniform_size(image2)
 
 
-
+		# return data formatted for SCINet2.0
 		return image1, image2, annotation1, annotation2, landmark1, landmark2
 
 
