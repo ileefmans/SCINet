@@ -18,10 +18,9 @@ from datahelper import CreateDataset, my_collate, my_collate2
 
 
 
-
+# Function creating arg parser
 def get_args():
 	parser = argparse.ArgumentParser(description = "Model Options")
-	parser.add_argument("--model_version", type=int, default=1, help="Version of model to be trained: options = {1:'MVP', ...)")
 	parser.add_argument("--local", type=int, default=0, help="1 if running on local machine, 0 if running on AWS")
 	parser.add_argument("--local_pickle_path", type=str, default="/Users/ianleefmans/Desktop/Insight/Project/Re-Identifying_Persistent_Skin_Conditions/skinConditionDetect/pickle/simple_train_dict.pkl", help="path to local pickled annotation path dictionary")
 	parser.add_argument("--remote_pickle_path", type=str, default="simple_train_dict.pkl")
@@ -49,31 +48,31 @@ def get_args():
 
 class Trainer:
 	"""
-		Class for training project models
+		Class for training SCINet2.0
 	"""
 
 	def __init__(self):
 
+		# run function to get arguments from argparser
 		self.ops = get_args()
-		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
-		self.model_version = self.ops.model_version
-		
-		# Import model
-		#if self.model_version==1:
-		self.model = SCINet20().to(self.device)
-		
 
+		# Set device to GPU if available otherwise cpu
+		self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") #if torch.cuda.is_available() else "cpu")
+		
+		# Instantiate SCINet2.0 model and send to device
+		self.model = SCINet20().to(self.device)
 		self.model_name = "SCINet"
 
-		#else:
-			# ENTER OTHER MODEL INITIALIZATIONS HERE
-			#pass
+		
 
-		# Set local or remote paths
+		# Set local or remote paths 
 		self.local = self.ops.local
+
+		# Access key and Secret Access Key for AWS
 		self.access_key = self.ops.access_key
 		self.secret_access_key = self.ops.secret_access_key
-		print("LOCAL: ", self.local)
+
+		# Set attributes that vary upon being remote or local
 		if self.local ==1:
 			self.local=True
 			print("TRUE")
@@ -88,7 +87,7 @@ class Trainer:
 			self.val_pickle_path = self.ops.remote_val_pickle_path
 			self.data_directory = self.ops.remote_data_directory
 			
-
+		# Set attributes that don't depend on being local or remote
 		self.img_size = self.ops.image_size
 		self.transform = torchvision.transforms.ToTensor()
 		self.batch_size = self.ops.batch_size
@@ -128,12 +127,17 @@ class Trainer:
 
 
 
-		# TRAINING
 
 	def train(self):
+		"""
+			Method for training model
+		"""
+
+		# Ensure everything is sent to GPU if being trained on the cloud
 		if self.local==False:
 			torch.set_default_tensor_type(torch.cuda.FloatTensor)
 			print("\n \n EVERYTHING TO CUDA \n \n")
+
 		# Load weights if applicable
 		if self.load_weights == True:
 			start_epoch, loss = self.load_checkpoint(self.model, self.optimizer, self.model_name)
@@ -142,89 +146,95 @@ class Trainer:
 		else:
 			start_epoch = 0
 
-		#start_epoch = 0
 
-			# Start Training loop
+		# Start Training Loop
 		for epoch in range(start_epoch, self.epochs+1):
 
 			# TRAIN
-			#if epoch>0:
-			self.model.train()
-			
-			train_loss = 0
-			counter=0
-			for image1, image2, annotation1, annotation2, landmark1, landmark2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
+			if epoch>0:
 
-
-				# image tensors and bounding box and label tensors to device
-				image1 = image1.to(self.device)
-				image2 = image2.to(self.device)
-
-
-
-				#print(self.model.weight.device)
-
-				x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
+				# Set model to training mode
+				self.model.train()
 				
+				# Initialize loss and counter that will allow model weights to be saved and overwritten every 10 minibatches
+				train_loss = 0
+				counter=0
 
-				loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
-				train_loss+=loss.item()
+				# Iterate through train set
+				for image1, image2, annotation1, annotation2, landmark1, landmark2 in tqdm(self.train_loader, desc= "Train Epoch "+str(epoch)):
 
-				# Clear optimizer gradient
-				self.optimizer.zero_grad()
-				# Backprop
-				loss.backward()
-				# Take a step 
-				self.optimizer.step()
-				
-				if counter%10==0:
-					self.save_checkpoint(self.model, self.optimizer, self.model_name, epoch, train_loss)
+					# image tensors and bounding box and label tensors to device
+					image1 = image1.to(self.device)
+					image2 = image2.to(self.device)
 
-			print(f'====> Epoch: {epoch} Average train loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
-
-			if self.local==True:
-				torch.save(self.model, os.path.join(self.save_path, self.model_name+".pt"))
-			else:
-				torch.save(self.model, self.model_name+"_epoch"+str(epoch)+".pt")
-				print("SAVED MODEL EPOCH " +str(epoch))
-
-			# with torch.no_grad():
-			# 	self.model.eval()
-			# 	for image1, image2, annotation1, annotation2 in tqdm(self.val_loader, desc= "Validation Epoch "+str(epoch)):
-			# 		val_loss = 0
-
-			# 		#image = [im.to(self.device) for im in image]
-			# 		#image = [im.cuda() for im in image]
-			# 		#annotation = [{k: v.to(self.device) for k, v in t.items()} for t in annotation]
-			# 		#annotation = [{k: v.cuda() for k, v in t.items()} for t in annotation]
-
-			# 		image1 = image1.to(self.device)
-			# 		image2 = image2.to(self.device)
-
-			# 		x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
+					# Forward pass of model
+					x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
 					
-			# 		loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
-			# 		val_loss+=loss
-			# 	print(f'====> Epoch: {epoch} Average test loss: {val_loss / len(self.val_loader.dataset):.4f}\n')
+					# Calculate loss from one pass and append to training loss
+					loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
+					train_loss+=loss.item()
+
+					# Clear optimizer gradient
+					self.optimizer.zero_grad()
+
+					# Backprop
+					loss.backward()
+
+					# Take a step with optimizer
+					self.optimizer.step()
+					
+					# Save/overwrite model weights every 10 minibatches
+					if counter%10==0:
+						self.save_checkpoint(self.model, self.optimizer, self.model_name, epoch, train_loss)
+
+				print(f'====> Epoch: {epoch} Average train loss: {train_loss / len(self.train_loader.dataset):.4f}\n')
+
+				# Save entire model as .pt after every epoch of training
+				if self.local==True:
+					torch.save(self.model, os.path.join(self.save_path, self.model_name+".pt"))
+				else:
+					torch.save(self.model, self.model_name+"_epoch"+str(epoch)+".pt")
+					print("SAVED MODEL EPOCH " +str(epoch))
+
+
+
+			# Evaluate on Validation Set after each epoch
+			with torch.no_grad():
+
+				# Set model to evaluation mode
+				self.model.eval()
+
+				# Iterate through validation set
+				for image1, image2, annotation1, annotation2 in tqdm(self.val_loader, desc= "Validation Epoch "+str(epoch)):
+					
+					# Initialize validation loss
+					val_loss = 0
+
+					# Send images to device
+					image1 = image1.to(self.device)
+					image2 = image2.to(self.device)
+
+					# Forward pass of model
+					x1_hat, x2_hat, z1, z2 = self.model(image1, image2)
+
+					# Calculate loss and append to validation loss
+					loss = self.loss_fcn(image1, image2, x1_hat, x2_hat, z1.detach(), z2.detach())
+					val_loss+=loss
+
+				print(f'====> Epoch: {epoch} Average test loss: {val_loss / len(self.val_loader.dataset):.4f}\n')
 
 			print("[DONE EPOCH{}]".format(epoch))
 
 		print("[DONE TRAINING]")
 
+		# Save model after all epochs are finished
 		if self.local==True:
 			torch.save(self.model, os.path.join(self.save_path, self.model_name+".pt"))
 		else:
 			torch.save(self.model, self.model_name+".pt")
 
 
-				
-
-				
 			
-
-
-
-
 
 
 	#SAVE MODEL PARAMETERS
@@ -246,9 +256,7 @@ class Trainer:
 				"optimizer_state_dict": optimizer.state_dict(), "loss": loss}, save_path)
 
 			
-
-
-		
+			
 
 
 	#LOAD MODEL PARAMETERS
