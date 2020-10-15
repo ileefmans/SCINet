@@ -153,22 +153,23 @@ class CreateDataset(torch.utils.data.Dataset):
 
 				annotation (list): list of dictionaries containing all annotation infromation
 		"""
-		annotation = {}
 
+		#Initialize annotatin dictionary
+		annotation = {}
 		count = 0
 		for i in total_annotation['annotation']:
+
+			# Error handling to catch cases where there are no bounding boxes provided etc
 			try:
-				#print("ENTERING TRY")
 				if (i['condition']=='Detected') and ('bounding_boxes' in i.keys()):
-					#print("ABOUT TO DESTRING")
 					box = self.destring(i['bounding_boxes'])
-					#print("DESTRING DONE!!!")
-					#print(box)
 					label = torch.ones([box.size(0)], dtype=torch.int64)*self.label_dict[i['label']]
 					if count == 0:
+						# Start creating boxes and labels for each sample
 						boxes = box
 						labels = label
 					else:
+						# stack the box and label tensors
 						boxes = torch.cat((boxes, box), 0) 
 						labels = torch.cat((labels, label), 0)
 					count+=1
@@ -176,7 +177,7 @@ class CreateDataset(torch.utils.data.Dataset):
 				pass
 			finally:
 				pass
- 		
+ 		# create dictionary for annotation with boxes and labels
 		annotation['boxes'] = boxes
 		annotation['labels'] = labels
 
@@ -184,13 +185,23 @@ class CreateDataset(torch.utils.data.Dataset):
 
 
 	def get_landmarks(self, total_annotation):
+		"""
+			Args:
+				total_annotation: full annotation for each sample
+
+			Method to extract facial landmarks for each image
+		"""
+
+		# List of landmarks to be used
 	    landmarks = ["RIGHT_EYE_RIGHT_CORNER", "LEFT_EYE_LEFT_CORNER", "NOSE_BOTTOM_CENTER", "MOUTH_LEFT", "MOUTH_RIGHT"]
+	    
+	    # Initialize anchor list
 	    anchor_list = []
 	    for i in range(len(landmarks)):
 	        anchors = total_annotation['landmarks'][landmarks[i]]
+	        #extract x and y coordinates and turn into ordered pair
 	        x = anchors['x']
 	        y = anchors['y']
-	        
 	        anchor = (x,y)
 	        anchor_list.append(anchor)
 	    
