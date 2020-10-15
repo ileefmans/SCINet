@@ -1,10 +1,9 @@
-# SCINet
-
-
 ![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/SCINet)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
+
+# SCINet
 
 **Table of Contents**  
 - [Motivation](https://github.com/ileefmans/SCINet/blob/master/README.md#motivation)  
