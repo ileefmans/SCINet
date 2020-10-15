@@ -34,7 +34,7 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
   
   
   ## Getting Started  
-  Follow the instructions below to get clone the repo and leverage the model.
+  *SCINet* is structured specifically for use by Cureskin. In this sense there are many intricacies in the code which are specifically designed to account for the structure of Cureskin's data. The model architecture of *SCINet2.0* is a fairly typical custom deep learning architecture so for those who want to use this portion of the code in seperate use-cases just follow the instructions below to get clone the repo and leverage the model.
   ### Usage  
   
   *Note: Model weights and data these models were trained and evaluated on are not available as they are the property of Cureskin*
@@ -53,12 +53,12 @@ I consulted for Cureskin, a company that provides remote dermatological treatmen
   ```shell script 
   pip3 install -r requirements.txt
   ```
-  3. Demo: 🏃🏿‍♀️🏃🏿🏃🏾‍♀️🏃🏾🏃🏽‍♀️🏃🏽🏃🏻‍♀️🏃🏻🏃🏼‍♀️🏃🏼 
+  3. Start coding!! 🤓😃🤓
   
   
   ## Acknowledgments and Contributions  
   
-  All data for training and testing *SCINet* was provided by Cureskin who owns the rights to the data along with the weights of the model. This project was completed during session 20C of the [Artificial Intelligence Fellowship at Insight Data Science](https://insightfellows.com/ai). This is a public repository and contribution by pull request is welcomed.
+  All data for training and testing *SCINet* was provided by Cureskin who owns the rights to the data along with the weights of the model. This project was completed during session 20C of the [Artificial Intelligence Fellowship at Insight Data Science](https://insightfellows.com/ai). This is a public repository and contribution by pull request is welcomed. 😃
   
   
   
