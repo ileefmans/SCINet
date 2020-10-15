@@ -1,5 +1,4 @@
 import os
-#from google.cloud import storage
 import pickle
 import torch
 from PIL import Image
@@ -13,8 +12,11 @@ import matplotlib.pyplot as plt
 
 
 
-# Define collate function for dataloader
+
 def my_collate(batch):
+	"""
+		Custom collate function for dataloader if using SCINet1.0
+	"""
     image0 = [item[0] for item in batch]
     image1 = [item[1] for item in batch]
     annotation0 = [item[2] for item in batch]
@@ -23,7 +25,11 @@ def my_collate(batch):
     landmark1 = [item[5] for item in batch]
     return image0, image1, annotation0, annotation1, landmark0, landmark1
 
+
 def my_collate2(batch):
+	"""
+		Custom collate function for dataloader if using SCINet2.0
+	"""
     image0 = [item[0] for item in batch]
     image1 = [item[1] for item in batch]
     image0 = torch.stack(image0)
@@ -36,7 +42,8 @@ def my_collate2(batch):
     return image0, image1, annotation0, annotation1, landmark0, landmark1
 
 
-# Define class for creating and uploaded pickled annotation dictionary
+
+# Define class for uploading pickled annotation dictionary
 class Annotation_Dict:
 	"""
 		Class for creating and importing pickled dictionary with 
@@ -46,25 +53,12 @@ class Annotation_Dict:
 			Args:
 
 			pickle_file_name (string): name of desired pickle file, format: '<name>.pkl"
+
 			annotation_directory (string): Directory where anotation json files are kept
 
 		"""
 		self.pickle_file_name = pickle_file_name
-		#self.filepath = filepath
-		
 
-
-	# def set_pickle(self):
-	# 	annotation_dict = {}
-	# 	count = 0 
-	# 	for filename in tqdm(os.listdir(self.filepath)):
-	# 		df = pd.read_json(self.filepath+filename)
-	# 		df = df.loc[(df.image_details.notnull()) or (df.image_path.notnull()),:].reset_index()
-	# 		for i in range(len(df)):
-	# 			annotation_dict[count] = (filename, i)
-	# 			count+=1
-	# 	with open(self.pickle_file_name, 'wb') as handle:
-	# 		pickle.dump(followup_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 	def get_pickle(self):
 		with open(self.pickle_file_name, 'rb') as handle:
@@ -114,7 +108,6 @@ class CreateDataset(torch.utils.data.Dataset):
 		self.secret_access_key = secret_access_key
 		self.geometric = geometric
 		self.transform = transform
-		#self.s3 = boto3.client('s3')
 
 		# get pickled dictionary for annotation paths
 		self.annotation_source = Annotation_Dict(self.pickle_path)
@@ -141,9 +134,12 @@ class CreateDataset(torch.utils.data.Dataset):
 		"""
 		out = []
 		for i in list_string:
-			x = i.split(',')
-			x = [float(j) for j in x]
+			# split on comma
+			x = i.split(',') 
+			# list comprehension to turn list of strings in to bounding box coordinates
+			x = [float(j) for j in x] 
 			out.append(x)
+		# turn bounding box list into a pytorch tensor
 		out = torch.tensor(out) 
 		return out     
 
