@@ -186,7 +186,6 @@ class RunSCINet10:
 				results.append(matched_boxes)
 
 			except:
-				#print("NO FACE FOUND")
 				pass
 			finally:
 				pass
