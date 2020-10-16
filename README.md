@@ -12,6 +12,7 @@
   - [SCINet2.0](https://github.com/ileefmans/SCINet#scinet20)  
 - [Usage](https://github.com/ileefmans/SCINet#usage)  
   - [Getting Started](https://github.com/ileefmans/SCINet#getting-started)  
+- [Documentation](https://github.com/ileefmans/SCINet#documentation)
 - [Acknowledgments and Contributions](https://github.com/ileefmans/SCINet#acknowledgments-and-contributions)  
 
 ## Motivation
@@ -54,6 +55,9 @@ This repository serves as a consulting project for Cureskin, a company that prov
   pip3 install -r requirements.txt
   ```
   3. Start coding!! 🤓
+  
+  ## Documentation  
+  Currently in the process of providing documentation leveraging Sphinx. This was not a part of my deliverable to Cureskin, but rather a feature that I believe would nicely complement this repo.
   
   
   ## Acknowledgments and Contributions  
