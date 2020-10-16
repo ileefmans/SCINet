@@ -131,5 +131,12 @@ dmypy.json
 #Others
 .DS_Store
 
+
+# Proprietary 
 utils/webapp.py
 utils/webapp/
+
+utils/mmod_human_face_detector.dat
+utils/shape_predictor_68_face_landmarks.dat
+
+
