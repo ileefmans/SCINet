@@ -12,6 +12,7 @@
   - [SCINet2.0](https://github.com/ileefmans/SCINet#scinet20)  
 - [Usage](https://github.com/ileefmans/SCINet#usage)  
   - [Getting Started](https://github.com/ileefmans/SCINet#getting-started)  
+  - [Run Demo](https://github.com/ileefmans/SCINet#run-demo)
 - [Documentation](https://github.com/ileefmans/SCINet#documentation)
 - [Acknowledgments and Contributions](https://github.com/ileefmans/SCINet#acknowledgments-and-contributions)  
 
@@ -55,6 +56,15 @@ This repository serves as a consulting project for Cureskin, a company that prov
   pip3 install -r requirements.txt
   ```
   3. Start coding!! 🤓
+  
+  ### Run Demo  
+  For those who would like a quick demo of *SCINet2.0*'s forward pass in action, follow the [Getting Started](https://github.com/ileefmans/SCINet#getting-started) instructions and then run the following command:  
+  
+ ```shell script
+ python3 utils/rundemo.py --size=<choose size>
+ ```
+ 
+ Here ```<choose size>``` is an integer that represents the height and width of your choosing that will be used to create a minibatch of random tensors to be passed through the model. It is recommended to choose a size below 500 for optimal run time.
   
   ## Documentation  
   Currently in the process of providing documentation leveraging ```Sphinx```. This was not a part of my deliverable to Cureskin, but rather a feature that I believe would nicely complement this repo.
