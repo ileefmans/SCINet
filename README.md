@@ -62,11 +62,11 @@ This repository serves as a consulting project for Cureskin, a company that prov
   For those who would like a quick demo of *SCINet2.0*'s forward pass in action, follow the [Getting Started](https://github.com/ileefmans/SCINet#getting-started) instructions and then follow these steps:  
   
   1. Install [Docker](https://docs.docker.com/get-docker/)  
-  2. Build demo image:
+  2. Build demo image with Docker:
  ```shell script
  docker build -t demo:1.0 -f DemoDockerfile .
  ```  
- 3. run docker image:
+ 3. run demo image with Docker:
  ```shell script  
  docker run demo:1.0 --size=<choose size>  
  ```
