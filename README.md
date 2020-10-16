@@ -57,7 +57,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
   3. Start coding!! 🤓
   
   ## Documentation  
-  Currently in the process of providing documentation leveraging Sphinx. This was not a part of my deliverable to Cureskin, but rather a feature that I believe would nicely complement this repo.
+  Currently in the process of providing documentation leveraging ```Sphinx```. This was not a part of my deliverable to Cureskin, but rather a feature that I believe would nicely complement this repo.
   
   
   ## Acknowledgments and Contributions  
