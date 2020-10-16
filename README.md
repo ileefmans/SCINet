@@ -59,11 +59,18 @@ This repository serves as a consulting project for Cureskin, a company that prov
   3. Start coding!! 🤓
   
   ### Run Demo  
-  For those who would like a quick demo of *SCINet2.0*'s forward pass in action, follow the [Getting Started](https://github.com/ileefmans/SCINet#getting-started) instructions and then run the following command:  
+  For those who would like a quick demo of *SCINet2.0*'s forward pass in action, follow the [Getting Started](https://github.com/ileefmans/SCINet#getting-started) instructions and then follow these steps:  
   
+  1. Install [Docker](https://docs.docker.com/get-docker/)  
+  2. Build demo image:
  ```shell script
- python3 utils/rundemo.py --size=<choose size>
+ docker build -t demo:1.0 -f DemoDockerfile .
+ ```  
+ 3. run docker image:
+ ```shell script  
+ docker run demo:1.0 --size=<choose size>  
  ```
+ 
  
  Here ```<choose size>``` is an integer that represents the height and width of your choosing that will be used to create a minibatch of random tensors to be passed through the model. It is recommended to choose a size below 500 for optimal run time.
   
