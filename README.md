@@ -37,6 +37,15 @@ This repository serves as a consulting project for Cureskin, a company that prov
     
 <img src="https://github.com/ileefmans/SCINet/blob/master/images/Flow_Chart.png" width=700 align=center>  
   
+    
+  **Stacking and Matching**  
+    
+<img src="https://github.com/ileefmans/SCINet/blob/master/images/Flow_Chart2.png" width=700 align=center>  
+  
+  
+  
+  
+  
   
 *SCINet1.0* leverages pretrained models from ```dlib ``` and ```opencv``` such as a pretrained Convolutional Neural Net for facial detection. 
 
