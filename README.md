@@ -33,7 +33,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
 ### SCINet1.0
 *SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in both.  
 
-<img src="https://github.com/ileefmans/SCINet/blob/master/images/flow_chart.png" width=700 align=center>  
+<img src="https://github.com/ileefmans/SCINet/blob/master/images/Flow_Chart.png" width=700 align=center>  
 
 *SCINet1.0* leverages pretrained models from ```dlib ``` and ```opencv``` such as a pretrained Convolutional Neural Net for facial detection. 
 
