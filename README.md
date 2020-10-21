@@ -31,7 +31,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
   This [link](https://www.youtube.com/watch?v=fg9VBqtjan4) also shows a quick demo providing a high-level intuition about what this project does. In the next two sections I will quickly detail the two versions of *SCINet* and how they differ.
   
 ### SCINet1.0
-*SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in both.  
+*SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in both. The two flow charts below provide a visualization of how this process works.  
   
   **Alignment and Centering:**  
     
@@ -41,8 +41,6 @@ This repository serves as a consulting project for Cureskin, a company that prov
   **Stacking and Matching**  
     
 <img src="https://github.com/ileefmans/SCINet/blob/master/images/Flow_Chart2.png" width=700 align=center>  
-  
-  
   
   
   
