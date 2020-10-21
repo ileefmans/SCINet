@@ -31,7 +31,11 @@ This repository serves as a consulting project for Cureskin, a company that prov
   This [link](https://www.youtube.com/watch?v=fg9VBqtjan4) also shows a quick demo providing a high-level intuition about what this project does. In the next two sections I will quickly detail the two versions of *SCINet* and how they differ.
   
 ### SCINet1.0
-*SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in both. *SCINet1.0* leverages pretrained models from ```dlib ``` and ```opencv``` such as a pretrained Convolutional Neural Net for facial detection. 
+*SCINet1.0* leverages classical computer vision techniques to match the conditions in the two images. This model detects the face in each image, aligns and centers the faces using facial landmarks, then stacks the images in order to match the conditions which occur in both.  
+
+<img src="https://github.com/ileefmans/SCINet/blob/master/images/flow_chart.png" width=700 align=center>  
+
+*SCINet1.0* leverages pretrained models from ```dlib ``` and ```opencv``` such as a pretrained Convolutional Neural Net for facial detection. 
 
 ### SCINet2.0
 *SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```. The model maps the facial images to a higher dimensional latent space using convolutional layers along with a [Spatial Transformer Network (STN)](https://arxiv.org/abs/1506.02025). The model then flattens this latent representation back down to a two dimensional image where the transformed bounding boxes from each image can be compared and matched. It should be noted that *SCINet2.0* is not production ready as there are a few kinks that need to be worked out so that the model trains more effectively.
