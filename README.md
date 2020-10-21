@@ -1,5 +1,5 @@
-![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey&?style=plastic&color=grey)
-[![Build Status](https://travis-ci.com/ileefmans/SCINet.svg?branch=master)](https://travis-ci.com/ileefmans/SCINet)
+![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey&?style=plastic&color=lightgrey)
+[![Build Status](https://travis-ci.com/ileefmans/SCINet.svg?branch=master)](https://travis-ci.com/ileefmans/SCINet&?style=plastic)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/SCINet)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
