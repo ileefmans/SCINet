@@ -51,7 +51,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
 *SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```. The model maps the facial images to a higher dimensional latent space using convolutional layers along with a [Spatial Transformer Network (STN)](https://arxiv.org/abs/1506.02025). The model then flattens this latent representation back down to a two dimensional image where the transformed bounding boxes from each image can be compared and matched. It should be noted that *SCINet2.0* is not production ready as there are a few kinks that need to be worked out so that the model trains more effectively.  
   
   **Structure:**  
-  *SCINet2.0* is a bi-autoencoder where the two patient images are fed into each branch. The encoder of each branch projects the corresponding image into a higher dimensional space where we obtain a latent representation of each image ($$z$$). 
+  *SCINet2.0* is a bi-autoencoder where the two patient images are fed into each branch. The encoder of each branch projects the corresponding image into a higher dimensional space where we obtain a latent representation of each image (z). These latent representations are then flattened down to 2-dimensional images by the decoder of each branch. The architecture of this model can be seen below:
   
   
   ## Usage  
