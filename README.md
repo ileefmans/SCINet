@@ -58,8 +58,8 @@ This repository serves as a consulting project for Cureskin, a company that prov
     
   **Loss Function:**  
   The loss function for *SCINet2.0* enforces 3 relationships during training:  
-    1. Image 1 is as close as possible to the output of autoencoder 1
-    2. Image 2 is as close as possible to the output of autoencoder 2
+    1. Image 1 is as close as possible to the output of autoencoder 1  
+    2. Image 2 is as close as possible to the output of autoencoder 2  
     3. The latent representations of both images are as close as possible  
   
   
