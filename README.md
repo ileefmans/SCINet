@@ -53,7 +53,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
   **Structure:**  
   *SCINet2.0* is a bi-autoencoder where the two patient images are fed into each branch. The encoder of each branch projects the corresponding image into a higher dimensional space where we obtain a latent representation of each image (z). These latent representations are then flattened down to 2-dimensional images by the decoder of each branch. The architecture of this model can be seen below:  
   
-  <img src="https://github.com/ileefmans/SCINet/blob/master/images/architecture1.png" width=450 align=center> 
+  <p align="center"> <img src="https://github.com/ileefmans/SCINet/blob/master/images/architecture1.png" width=450 align=center> </p>
   
   
   ## Usage  
