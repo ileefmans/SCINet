@@ -38,7 +38,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
 <img src="https://github.com/ileefmans/SCINet/blob/master/images/Flow_Chart.png" width=700 align=center>  
   
     
-  **Stacking and Matching**  
+  **Stacking and Matching:**  
     
 <img src="https://github.com/ileefmans/SCINet/blob/master/images/Flow_Chart2.png" width=700 align=center>  
   
@@ -48,7 +48,10 @@ This repository serves as a consulting project for Cureskin, a company that prov
 *SCINet1.0* leverages pretrained models from ```dlib ``` and ```opencv``` such as a pretrained Convolutional Neural Net for facial detection. 
 
 ### SCINet2.0
-*SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```. The model maps the facial images to a higher dimensional latent space using convolutional layers along with a [Spatial Transformer Network (STN)](https://arxiv.org/abs/1506.02025). The model then flattens this latent representation back down to a two dimensional image where the transformed bounding boxes from each image can be compared and matched. It should be noted that *SCINet2.0* is not production ready as there are a few kinks that need to be worked out so that the model trains more effectively.
+*SCINet2.0* is a custom deep learning articheture built from scratch using ```pytorch```. The model maps the facial images to a higher dimensional latent space using convolutional layers along with a [Spatial Transformer Network (STN)](https://arxiv.org/abs/1506.02025). The model then flattens this latent representation back down to a two dimensional image where the transformed bounding boxes from each image can be compared and matched. It should be noted that *SCINet2.0* is not production ready as there are a few kinks that need to be worked out so that the model trains more effectively.  
+  
+  **Structure:**  
+  *SCINet2.0* is a bi-autoencoder where the two patient images are fed into each branch. The encoder of each branch projects the corresponding image into a higher dimensional space where we obtain a latent representation of each image ($$z$$). 
   
   
   ## Usage  
