@@ -64,7 +64,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
   3. The latent representations of both images are as close as possible  
   
   
-  
+  <p align="center"> <img src="https://github.com/ileefmans/SCINet/blob/master/images/architecture2.png" width=450 align=center> </p>
   
   
   
