@@ -63,7 +63,7 @@ This repository serves as a consulting project for Cureskin, a company that prov
   2. Image 2 is as close as possible to the output of autoencoder 2  
   3. The latent representations of both images are as close as possible  
   
-  The first two of these relationships are what we might expect to be enforced by the loss function, the third, by contrast is a bit unexpected. The reason to enforce that the latent representations of both images are as close as possible is because the images are of the same patient's face, so it is reasonable to expect these representations to be similar. The diagram below, followed by the explicit form of the loss function shed more light on this matter.   
+  The first two of these relationships are what we might expect to be enforced by the loss function, the third, by contrast is a bit unexpected. The reason to enforce that the latent representations of both images are as close as possible is because the images are of the same patient's face, so it is reasonable to expect these representations to be similar. The diagram below, followed by the explicit form of the loss function, shed more light on this matter.   
   
   
   <p align="center"> <img src="https://github.com/ileefmans/SCINet/blob/master/images/architecture2.png" width=450 align=center> </p>  
