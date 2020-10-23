@@ -57,16 +57,20 @@ This repository serves as a consulting project for Cureskin, a company that prov
     
     
   **Loss Function:**  
-  The loss function for *SCINet2.0* enforces 3 relationships during training:  
+  The loss function for *SCINet2.0* enforces 3 relationships during training via Binary Cross-Entropy Loss:  
     
   1. Image 1 is as close as possible to the output of autoencoder 1  
   2. Image 2 is as close as possible to the output of autoencoder 2  
   3. The latent representations of both images are as close as possible  
   
-  The first two of these relationships are what we might expect to be enforced by the loss function, the third, by contrast is a bit unexpected. The reason to enforce that the latent representations of both images are as close as possible is because the images are of the same patient's face, so it is reasonable to expect these representations to be similar. The diagram below, followed by the explicit form of the loss function shed more light on this matter.  
+  The first two of these relationships are what we might expect to be enforced by the loss function, the third, by contrast is a bit unexpected. The reason to enforce that the latent representations of both images are as close as possible is because the images are of the same patient's face, so it is reasonable to expect these representations to be similar. The diagram below, followed by the explicit form of the loss function shed more light on this matter.   
   
   
-  <p align="center"> <img src="https://github.com/ileefmans/SCINet/blob/master/images/architecture2.png" width=450 align=center> </p>
+  <p align="center"> <img src="https://github.com/ileefmans/SCINet/blob/master/images/architecture2.png" width=450 align=center> </p>  
+  
+  <p align="center"> <img src="https://github.com/ileefmans/SCINet/blob/master/images/loss_function.png" width=450 align=center> </p>  
+  
+  It should be noted that the weights corresponding to each Binary Cross-Entropy Loss are hyper-parameters to be tuned during training.
   
   
   
