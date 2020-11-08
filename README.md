@@ -1,5 +1,6 @@
 ![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey&?style=for-the-badge&color=lightgrey)  
   
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Framework](https://img.shields.io/badge/Framework-Pytorch-orange&?style=flat&logo=PyTorch&color=orange)
 [![Build Status](https://travis-ci.com/ileefmans/SCINet.svg?branch=master)](https://travis-ci.com/ileefmans/SCINet&?style=plastic)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/SCINet)
