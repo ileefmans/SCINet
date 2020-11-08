@@ -2,8 +2,10 @@
   
  
 <p align="center">
-<img src="https://github.com/ileefmans/SCINet/blob/master/images/Logo.png" width=500 align=center>   
+<img src="https://github.com/ileefmans/SCINet/blob/master/images/Logo.png" width=500 align=center>
+  </p>  
 
+<p align="center">
 ![Framework](https://img.shields.io/badge/Framework-Pytorch-orange&?style=flat&logo=PyTorch&color=orange)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Build Status](https://travis-ci.com/ileefmans/SCINet.svg?branch=master)](https://travis-ci.com/ileefmans/SCINet&?style=plastic)
