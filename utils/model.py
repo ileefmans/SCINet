@@ -1,25 +1,24 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F 
+import torch.nn.functional as F
 import torch.optim as optim
-import torchvision 
+import torchvision
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 
-
-
 class STN(nn.Module):
 	"""
-		Spatial Transformer Network Module
+	Spatial Transformer Network Module
 	"""
+
 	def __init__(self, input_size):
 		"""
-			Args:
+		Args:
 
-					input_size (torch.Size): Size of input tensor    ex: x.size()
+				input_size (torch.Size): Size of input tensor    ex: x.size()
 
 		"""
 		super(STN, self).__init__()
@@ -33,31 +32,41 @@ class STN(nn.Module):
 			nn.Conv2d(self.channels, 8, kernel_size=self.kernel_size1),
 			nn.MaxPool2d(2, stride=2),
 			nn.ReLU(True),
-			nn.Conv2d(8,10, kernel_size=self.kernel_size2),
+			nn.Conv2d(8, 10, kernel_size=self.kernel_size2),
 			nn.MaxPool2d(2, stride=2),
-			nn.ReLU(True)
+			nn.ReLU(True),
 		)
 
 		# calculate dimentions after convolutions (needed for fully connected layers)
-		self.local_size  = round(((round(((self.input_size-(self.kernel_size1-1))/2)-.01) - (self.kernel_size2-1))/2)-.01)
-		
+		self.local_size = round(
+			(
+				(
+					round(((self.input_size - (self.kernel_size1 - 1)) / 2) - 0.01)
+					- (self.kernel_size2 - 1)
+				)
+				/ 2
+			)
+			- 0.01
+		)
 
 		# Regressor for the 3x2 affine matrix
 		self.fc_loc = nn.Sequential(
-			nn.Linear(10*self.local_size*self.local_size, 32),
+			nn.Linear(10 * self.local_size * self.local_size, 32),
 			nn.ReLU(True),
-			nn.Linear(32, 3*2)
+			nn.Linear(32, 3 * 2),
 		)
 
 		# Initialize the weights/bias with identity transformation
 		self.fc_loc[2].weight.data.zero_()
-		self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
+		self.fc_loc[2].bias.data.copy_(
+			torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float)
+		)
 
 	def forward(self, x):
 		# Obtain transformation parameters (theta)
 		xs = self.localization(x)
-		xs= xs.view(-1, 10*self.local_size*self.local_size)
-		#Create 3x2 affine matrix
+		xs = xs.view(-1, 10 * self.local_size * self.local_size)
+		# Create 3x2 affine matrix
 		theta = self.fc_loc(xs)
 		theta = theta.view(-1, 2, 3)
 		# Grid Generator
@@ -67,53 +76,57 @@ class STN(nn.Module):
 		return x
 
 
-
 class ConvLayer(nn.Module):
 	"""
-		Convolutional layer consisting of a 2d convolution, (optionally 2d dropout), max pooling and a ReLU 
+	Convolutional layer consisting of a 2d convolution, (optionally 2d dropout), max pooling and a ReLU
 	"""
-	def __init__(self, in_channels, out_channels, kernel_size=5, dropout=False, final_layer=False):
+
+	def __init__(
+		self, in_channels, out_channels, kernel_size=5, dropout=False, final_layer=False
+	):
 		"""
-			Args:
+		Args:
 
-				in_channels (int): 	Number of input channels
+			in_channels (int):  Number of input channels
 
-				out_channels (int): Number of output channels
-				
-				kernel_size (int): 	Kernel Size for convolution
-				
-				dropout (bool): 	Dropout layer included if True
-		
+			out_channels (int): Number of output channels
+
+			kernel_size (int):  Kernel Size for convolution
+
+			dropout (bool):     Dropout layer included if True
+
 		"""
 		super(ConvLayer, self).__init__()
 
 		# Channels and kernel size
 		self.in_channels = in_channels
-		self.out_channels =  out_channels
+		self.out_channels = out_channels
 		self.kernel_size = kernel_size
 
 		# Different types of modules to be used
-		self.conv = nn.Conv2d(self.in_channels, self.out_channels, kernel_size=self.kernel_size)
+		self.conv = nn.Conv2d(
+			self.in_channels, self.out_channels, kernel_size=self.kernel_size
+		)
 		self.pool = nn.MaxPool2d(kernel_size=2, return_indices=True)
 		self.relu = nn.ReLU()
 		self.sigmoid = nn.Sigmoid()
 
-		# Whether or not dropout will be used, also whether or not this block is the final block of a portion 
+		# Whether or not dropout will be used, also whether or not this block is the final block of a portion
 		# of the network
 		self.dropout = dropout
 		self.drop = nn.Dropout2d()
-		self.final_layer=final_layer
+		self.final_layer = final_layer
 
 	def forward(self, x):
 		"""
-			Forward pass of the network
+		Forward pass of the network
 		"""
 		x = self.conv(x)
-		if self.dropout==True:
+		if self.dropout == True:
 			x = self.drop(x)
 		pre_pool_dim = x.size()
 		x, idx = self.pool(x)
-		if self.final_layer ==False:
+		if self.final_layer == False:
 			x = self.relu(x)
 		else:
 			x = self.sigmoid(x)
@@ -123,23 +136,33 @@ class ConvLayer(nn.Module):
 
 class DeConvLayer(nn.Module):
 	"""
-		De-convolutional layer consisting of a 2d de-convolution, (optionally 2d dropout), max unpooling and a ReLU 
+	De-convolutional layer consisting of a 2d de-convolution, (optionally 2d dropout), max unpooling and a ReLU
 	"""
-	def __init__(self, pool_index, pre_pool_dims, in_channels, out_channels, kernel_size=5, dropout=False, final_layer=False):
+
+	def __init__(
+		self,
+		pool_index,
+		pre_pool_dims,
+		in_channels,
+		out_channels,
+		kernel_size=5,
+		dropout=False,
+		final_layer=False,
+	):
 		"""
-			Args:
+		Args:
 
-				pool_index (idx): 	Index returned from nn.MaxPool2d operation
+			pool_index (idx):   Index returned from nn.MaxPool2d operation
 
-				pre_pool_dims (torch.Size): Dimensions prior to the corresponding pooling operation
+			pre_pool_dims (torch.Size): Dimensions prior to the corresponding pooling operation
 
-				in_channels (int): 	Number of input channels
+			in_channels (int):  Number of input channels
 
-				out_channels (int): Number of output channels
-				
-				kernel_size (int): 	Kernel Size for convolution
-				
-				dropout (bool): 	Dropout layer included if True
+			out_channels (int): Number of output channels
+
+			kernel_size (int):  Kernel Size for convolution
+
+			dropout (bool):     Dropout layer included if True
 		"""
 		super(DeConvLayer, self).__init__()
 
@@ -156,7 +179,7 @@ class DeConvLayer(nn.Module):
 		self.relu = nn.ReLU()
 		self.sigmoid = nn.Sigmoid()
 
-		# Whether or not dropout will be used, also whether or not this block is the final block of a portion 
+		# Whether or not dropout will be used, also whether or not this block is the final block of a portion
 		# of the network
 		self.dropout = dropout
 		self.drop = nn.Dropout2d()
@@ -164,27 +187,23 @@ class DeConvLayer(nn.Module):
 
 	def forward(self, x):
 		"""
-			Forward pass of the network
+		Forward pass of the network
 		"""
 		x = self.unpool(x, self.pool_index, self.pre_pool_dims)
-		if self.dropout==True:
+		if self.dropout == True:
 			x = self.drop(x)
 		x = self.convT(x)
-		if self.final_layer==False:
+		if self.final_layer == False:
 			x = self.relu(x)
 		else:
 			x = self.sigmoid(x)
 
-
 		return x
-		
-
-
 
 
 class Encoder(nn.Module):
 	"""
-		Encoder portion of each branch of the bi-headed network SCINet2.0
+	Encoder portion of each branch of the bi-headed network SCINet2.0
 	"""
 
 	def __init__(self):
@@ -193,10 +212,10 @@ class Encoder(nn.Module):
 		# Custom convolutional blocks with spacial transformer network integrated between feature mappings
 		self.conv1 = ConvLayer(3, 10, kernel_size=5, dropout=True)
 		self.conv2 = ConvLayer(10, 20, kernel_size=5, dropout=False, final_layer=True)
-		
+
 	def forward(self, x):
 		"""
-			Forward pass of the network
+		Forward pass of the network
 		"""
 		stn = STN(x.size())
 		x = stn(x)
@@ -208,19 +227,18 @@ class Encoder(nn.Module):
 		return x, [idx1, idx2], [pre_pool_dim1, pre_pool_dim2]
 
 
-
 class Decoder(nn.Module):
 	"""
-		Decoder portion of each branch of the bi-headed network SCINet2.0
+	Decoder portion of each branch of the bi-headed network SCINet2.0
 	"""
 
 	def __init__(self, index_list, dimension_list):
 		"""
-			Args:
+		Args:
 
-					index_list (list): List of pooling indices returned from Encoder
+				index_list (list): List of pooling indices returned from Encoder
 
-					dimension_list (list): List of prepooling dimensions returned from Encoder
+				dimension_list (list): List of prepooling dimensions returned from Encoder
 		"""
 		super(Decoder, self).__init__()
 
@@ -229,12 +247,27 @@ class Decoder(nn.Module):
 		self.dimension_list = dimension_list
 
 		# Custom de-convolutional blocks with spacial transformer network integrated between feature mappings
-		self.convT1 = DeConvLayer(self.index_list[1], self.dimension_list[1], 20, 10, kernel_size=5, dropout=False)
-		self.convT2 = DeConvLayer(self.index_list[0], self.dimension_list[0], 10, 3, kernel_size=5, dropout=True, final_layer=True)
+		self.convT1 = DeConvLayer(
+			self.index_list[1],
+			self.dimension_list[1],
+			20,
+			10,
+			kernel_size=5,
+			dropout=False,
+		)
+		self.convT2 = DeConvLayer(
+			self.index_list[0],
+			self.dimension_list[0],
+			10,
+			3,
+			kernel_size=5,
+			dropout=True,
+			final_layer=True,
+		)
 
 	def forward(self, x):
 		"""
-			Forward pass of the network
+		Forward pass of the network
 		"""
 		stn = STN(x.size())
 		x = stn(x)
@@ -245,9 +278,10 @@ class Decoder(nn.Module):
 
 		return x
 
+
 class SCINet20(nn.Module):
 	"""
-		Bi-headed autoencoder with Spacial Transformer Network modules between the convolutional feature mappings
+	Bi-headed autoencoder with Spacial Transformer Network modules between the convolutional feature mappings
 	"""
 
 	def __init__(self):
@@ -259,13 +293,13 @@ class SCINet20(nn.Module):
 
 	def forward(self, x1, x2):
 		"""
-			Args:
+		Args:
 
-				x1 (torch tensor): tensor to be fed to first autoencoder
+			x1 (torch tensor): tensor to be fed to first autoencoder
 
-				x2 (torch tensor): tensor to be fed to second autoencoder
+			x2 (torch tensor): tensor to be fed to second autoencoder
 
-			Forward pass of the network
+		Forward pass of the network
 		"""
 
 		# Feed tensors into two heads of the network
@@ -282,17 +316,3 @@ class SCINet20(nn.Module):
 
 		# return output from each autoencoder along with the latent representation of each autoencoder
 		return x1, x2, z1, z2
-
-		
-
-
-
-
-
-		
-
-
-
-
-
-
