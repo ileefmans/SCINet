@@ -6,8 +6,9 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/SCINet)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
-
+<p align="center">
 # SCINet
+  </p>
 
 **Table of Contents**  
 - [Motivation](https://github.com/ileefmans/SCINet/blob/master/README.md#motivation)  
