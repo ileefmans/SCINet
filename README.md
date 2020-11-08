@@ -1,9 +1,7 @@
 ![Insight Program](https://img.shields.io/badge/Insight-Artificial%20Intelligence-lightgrey&?style=for-the-badge&color=lightgrey)  
   
  
-<p align="center">
-<img src="https://github.com/ileefmans/SCINet/blob/master/images/Logo.png" width=500 align=center>
-  </p>  
+# SCINet  
 
 
 ![Framework](https://img.shields.io/badge/Framework-Pytorch-orange&?style=flat&logo=PyTorch&color=orange)
