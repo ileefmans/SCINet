@@ -1,13 +1,23 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: demo-deployment
+  labels:
+    app: demo
 spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: demo
   template:
     metadata:
-      name: demo-deployment-pod
+      labels:
+        app: demo
     spec:
       containers: 
-      - name: demo-deployment
-        image: demo:1.0
-      restartPolicy: Never    
+        - name: backend
+          image: ileefmans/scinet:demo
+          ports:
+            - containerPort: 80
+
+   
