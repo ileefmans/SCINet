@@ -9,7 +9,7 @@ Welcome to SCINet's documentation!
 
 Purpose of SCINet:
 ==================
-SCINet is a model used to help identify persistent skin conditions. 
+SCINet is a model used to help identify persistent skin conditions. Given two facial images of the same patient at different stages in their treatment, and with their conditions already detected, SCINet identifies the corresponding conditions in each image. 
 
 .. code-block:: python
    
@@ -18,11 +18,15 @@ SCINet is a model used to help identify persistent skin conditions.
    print("hello"+a+b)
    >> hello
 
+Guide
+^^^^^
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-
+   
+   license
+   help
 
 Indices and tables
 ==================
