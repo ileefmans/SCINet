@@ -7,6 +7,7 @@
 ![Framework](https://img.shields.io/badge/Framework-Pytorch-orange&?style=flat&logo=PyTorch&color=orange)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Build Status](https://travis-ci.com/ileefmans/SCINet.svg?branch=master)](https://travis-ci.com/ileefmans/SCINet&?style=plastic)
+[![Documentation Status](https://readthedocs.org/projects/scinet/badge/?version=latest)](https://scinet.readthedocs.io/en/latest/?badge=latest)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ileefmans/SCINet)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ileefmans/SCINet.svg)
 ![GitHub top language](https://img.shields.io/github/languages/top/ileefmans/SCINet)
