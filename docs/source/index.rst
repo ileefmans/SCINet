@@ -28,6 +28,15 @@ Guide
    license
    help
 
+The API Documentation
+^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   developer_interface
+
 Indices and tables
 ==================
 
